@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  /* Janela Tauri inicia com `transparent: true` — o body precisa ser
+     transparente pra os cantos arredondados do <main> aparecerem.
+     Cor de fundo real fica no <main> em App.tsx. */
+  html, body {
+    background: transparent !important;
+  }
+  body {
+    @apply text-white antialiased;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  /* Esconde scrollbar mas mantém scroll (UX limpa) */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}

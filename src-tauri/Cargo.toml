@@ -1,0 +1,73 @@
+[package]
+name = "remoctrl"
+version = "0.0.1"
+description = "Remoctrl — universal smart TV remote"
+authors = ["Remoctrl"]
+edition = "2021"
+rust-version = "1.77"
+
+# O Cargo gera duas crates: a lib (compartilhada com mobile no futuro)
+# e o binário desktop que apenas chama remoctrl_lib::run().
+[lib]
+name = "remoctrl_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri core. tray-icon habilita o System Tray (menu Show/Hide/Quit).
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+# Sprint 1 — atalho global (Ctrl+Shift+N) + persistência de TVs/configs
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-store = "2"
+# Garante que só uma instância roda — clicar no ícone com app no tray foca a janela
+# em vez de spawnar duplicata travada na porta IPC.
+tauri-plugin-single-instance = "2"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP — Roku ECP usa POST simples na porta 8060
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# WebSocket — Samsung (8001/8002) e LG (3000/3001).
+# Usamos a variante async/tokio pra não bloquear o runtime.
+# Samsung Tizen serve WSS com cert auto-assinado — precisamos de `rustls`
+# expostos diretamente pra desabilitar a validação (LAN-only, é seguro).
+tokio-tungstenite = { version = "0.24", features = [
+  "rustls-tls-webpki-roots",
+  "connect",
+] }
+# rustls com `ring` como crypto provider (mesmo que tungstenite usa).
+# Precisamos declarar explicitamente pra escrever `ClientConfig::builder()` no samsung.rs.
+rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "ring"] }
+webpki-roots = "0.26"
+
+# Discovery via SSDP — encontra Roku/Samsung/LG na LAN
+ssdp-client = "2"
+# StreamExt pra consumir o stream de respostas SSDP
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+
+# Parser XML — Roku ECP devolve XML em /query/apps e /query/device-info
+quick-xml = "0.36"
+
+# Serialização (TVs salvas no disco, mensagens IPC)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+url = "2"
+
+# Sprint 2 — Samsung exige nome do device em base64 + UUID na mensagem.
+# LG webOS exige um id único pra cada request no JSON-RPC.
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+async-trait = "0.1"
+
+# Erros — anyhow pro app, thiserror pra erros de domínio
+anyhow = "1"
+thiserror = "1"
+
+# Logs estruturados
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
