@@ -10,7 +10,7 @@
 
 import {
   Home, ChevronLeft, Volume2, VolumeX, Volume1,
-  Power, Play, Rewind, FastForward, RotateCcw, Info as InfoIcon,
+  Power, Play, Pause, Rewind, FastForward, RotateCcw, Info as InfoIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTvStore } from "@/stores/tvStore";
@@ -226,7 +226,8 @@ export function RemoteShell() {
           <Rewind className="w-4 h-4" />
         </RemoteButton>
         <RemoteButton onClick={() => dispatch("PlayPause", "Play")} flash={flash("Play")} title="Play/Pause (Espaço)">
-          <Play className="w-4 h-4" fill="currentColor" />
+          <Play className="w-3.5 h-3.5" fill="currentColor" />
+          <Pause className="w-3.5 h-3.5 -ml-0.5" fill="currentColor" />
         </RemoteButton>
         <RemoteButton onClick={() => dispatch("Fwd", "Fwd")} flash={flash("Fwd")} title="Avançar (L)">
           <FastForward className="w-4 h-4" />

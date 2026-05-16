@@ -97,6 +97,15 @@ export async function sendCommand(tv: TvDevice, cmd: Command): Promise<void> {
       });
       return;
     }
+    case "sony": {
+      // PSK opcional — Sony aceita sem auth se IP Control estiver "Normal" (sem chave).
+      await invoke("sony_send_key", {
+        host: tv.host,
+        psk: tv.auth_token ?? null,
+        command: cmd,
+      });
+      return;
+    }
     default:
       throw new Error(`Marca '${tv.brand}' não suportada`);
   }
@@ -137,6 +146,8 @@ export async function probeReachability(tv: TvDevice): Promise<boolean> {
       ? "samsung_is_reachable"
       : tv.brand === "lg"
       ? "lg_is_reachable"
+      : tv.brand === "sony"
+      ? "sony_is_reachable"
       : null;
   if (!cmd) return false;
   return invoke<boolean>(cmd, { host: tv.host });

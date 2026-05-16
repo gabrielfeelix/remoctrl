@@ -43,7 +43,9 @@ export function UpgradeModal() {
       onClick={close}
     >
       <div
-        className="w-full max-w-[420px] bg-[#15181d] border border-white/[0.06] rounded-2xl p-6 my-auto shadow-2xl"
+        className="w-full max-w-[420px] rounded-2xl p-6 my-auto shadow-2xl border
+                   bg-white border-gray-200
+                   dark:bg-[#15181d] dark:border-white/[0.06]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-3">
@@ -51,35 +53,38 @@ export function UpgradeModal() {
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 grid place-items-center">
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
-            <h3 className="text-base font-bold">Remoctrl Pro</h3>
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">Remoctrl Pro</h3>
           </div>
-          <button onClick={close} className="text-white/50 hover:text-white p-1">
+          <button
+            onClick={close}
+            className="p-1 text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-sm text-white/70 mb-3 leading-snug">
+        <p className="text-sm mb-3 leading-snug text-gray-600 dark:text-white/70">
           Tira o limite gratuito e libera tudo. Vitalício, sem assinatura.
         </p>
 
         <div className="space-y-1.5 mb-4">
           {PRO_FEATURES.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm text-white">
+            <div key={i} className="flex items-center gap-2 text-sm text-gray-800 dark:text-white">
               <Check className="w-4 h-4 text-primary shrink-0" />
               <span>{f}</span>
             </div>
           ))}
         </div>
 
-        <div className="rounded-xl p-3 bg-primary/5 border border-primary/30 mb-4">
+        <div className="rounded-xl p-3 mb-4 bg-primary/[0.06] border border-primary/30">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-extrabold text-white">R$ 14,90</span>
-            <span className="text-xs text-white/50 line-through">R$ 24,90</span>
+            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">R$ 14,90</span>
+            <span className="text-xs line-through text-gray-500 dark:text-white/50">R$ 24,90</span>
             <span className="text-[10px] uppercase tracking-wider text-primary font-bold ml-auto">
               Lançamento
             </span>
           </div>
-          <p className="text-[11px] text-white/60 mt-0.5">Pagamento único · acesso vitalício</p>
+          <p className="text-[11px] mt-0.5 text-gray-600 dark:text-white/60">Pagamento único · acesso vitalício</p>
         </div>
 
         {!showInput ? (
@@ -93,7 +98,9 @@ export function UpgradeModal() {
             </button>
             <button
               onClick={() => setShowInput(true)}
-              className="w-full px-4 py-2 rounded-lg bg-[#2a2f37] hover:bg-[#3d4350] text-white text-sm font-semibold"
+              className="w-full px-4 py-2 rounded-lg text-sm font-semibold
+                         bg-gray-100 text-gray-800 hover:bg-gray-200
+                         dark:bg-[#2a2f37] dark:text-white dark:hover:bg-[#3d4350]"
             >
               Já tenho uma chave
             </button>
@@ -105,12 +112,16 @@ export function UpgradeModal() {
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="REMOCTRL-XXXX-XXXX-XXXX"
-              className="w-full bg-black/30 text-white text-sm font-mono rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
+              className="w-full text-sm font-mono rounded-lg border px-3 py-2 outline-none transition-colors
+                         bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
+                         dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => setShowInput(false)}
-                className="flex-1 px-4 py-2 rounded-lg bg-[#2a2f37] hover:bg-[#3d4350] text-white text-sm font-semibold"
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold
+                           bg-gray-100 text-gray-800 hover:bg-gray-200
+                           dark:bg-[#2a2f37] dark:text-white dark:hover:bg-[#3d4350]"
               >
                 Voltar
               </button>
@@ -121,7 +132,7 @@ export function UpgradeModal() {
                 Ativar
               </button>
             </div>
-            <p className="text-[10px] text-white/40 text-center mt-1">
+            <p className="text-[10px] text-center mt-1 text-gray-500 dark:text-white/40">
               Dica: qualquer chave começando com <code>REMOCTRL-</code> + 8 chars funciona (modo teste).
             </p>
           </div>

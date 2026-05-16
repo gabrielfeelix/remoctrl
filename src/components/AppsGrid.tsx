@@ -20,6 +20,12 @@ interface UnifiedApp {
   color?: string;
 }
 
+// Nome amigável da marca pra usar em mensagens de erro/aviso.
+const BRAND_HOME_HINT: Record<string, string> = {
+  samsung: "Samsung",
+  sony: "Sony",
+};
+
 export function AppsGrid() {
   const tv = useTvStore((s) => s.selected());
   const showToast = useToast((s) => s.show);
@@ -60,7 +66,8 @@ export function AppsGrid() {
           res.map((a) => ({ id: a.id, name: a.title, iconUrl: a.icon_url })),
         );
       } else {
-        // Samsung — usa lista comum
+        // Samsung / Sony — sem listagem confiável via protocolo do remoto.
+        // Mostra a lista de "comuns" que tenham mapping pra essa marca.
         setApps(
           COMMON_APPS.filter((c) => c.ids[tv.brand]).map((c) => ({
             id: c.ids[tv.brand]!,
@@ -103,16 +110,17 @@ export function AppsGrid() {
           appId: app.id,
         });
       } else {
-        // Samsung não tem launch direto de app via WS no protocolo público
+        // Samsung / Sony: protocolo do remoto não tem "launch app" universal.
+        // Fallback: Home + setas. Aviso amigável.
         showToast(
-          "Samsung não tem atalho de app — use Home + navegue até o app",
+          `${BRAND_HOME_HINT[tv.brand] ?? "Esta TV"} não tem atalho direto pra apps — use Home + setas.`,
           "err",
         );
         return;
       }
       pushRecent({
         appId: app.id,
-        brand: tv.brand as "roku" | "lg" | "samsung",
+        brand: tv.brand as "roku" | "lg" | "samsung" | "sony",
         name: app.name,
         iconUrl: app.iconUrl,
         lastOpenedAt: Date.now(),
@@ -149,7 +157,7 @@ export function AppsGrid() {
 
   if (!tv) {
     return (
-      <div className="text-center text-white/40 text-sm py-12">
+      <div className="text-center text-sm py-12 text-gray-400 dark:text-white/40">
         Selecione uma TV pra ver os apps.
       </div>
     );
@@ -164,7 +172,7 @@ export function AppsGrid() {
       {myRecents.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold">
+            <h3 className="text-[10px] uppercase tracking-[0.08em] font-bold text-gray-500 dark:text-white/50">
               Recentes
             </h3>
           </div>

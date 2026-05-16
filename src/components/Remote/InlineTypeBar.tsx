@@ -92,15 +92,16 @@ export function InlineTypeBar() {
     }
   };
 
-  // Placeholder constante — sem mensagens contextuais ("Selecione uma TV…").
-  // Quando não há TV, o input fica visualmente desabilitado.
+  // Visual minimalista: sem container/retângulo. Só a lupa + input com
+  // underline sutil que ganha cor primary no focus. Funciona em dark
+  // (sobre o gradiente do remote) e claro (sobre painel branco).
   return (
     <div
-      className={`flex-1 min-w-0 flex items-center gap-1.5 px-3 h-11 rounded-full
-                  border transition-colors
+      className={`flex-1 min-w-0 flex items-center gap-2 h-11
+                  border-b transition-colors
                   ${supportsType
-                    ? "border-white/[0.08] bg-[#1f242b] focus-within:border-primary/60 focus-within:bg-[#23282f]"
-                    : "border-white/[0.04] bg-white/[0.02] opacity-50"}`}
+                    ? "border-white/15 focus-within:border-primary"
+                    : "border-white/[0.06] opacity-50"}`}
     >
       <Search className="w-4 h-4 text-white/40 shrink-0" />
       <input
@@ -119,7 +120,7 @@ export function InlineTypeBar() {
           type="button"
           onClick={onClear}
           title="Limpar (Esc)"
-          className="p-1 rounded-md text-white/50 hover:text-white hover:bg-white/5 shrink-0"
+          className="p-0.5 rounded text-white/40 hover:text-white shrink-0"
         >
           <X className="w-3.5 h-3.5" />
         </button>

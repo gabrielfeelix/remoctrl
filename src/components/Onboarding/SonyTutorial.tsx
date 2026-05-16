@@ -1,30 +1,30 @@
-// Tutorial "Como ativar o Modo Permissivo na Roku"
-// Por padrão a Roku BLOQUEIA comandos ECP externos por segurança.
-// O usuário precisa ativar "Permissive Mode" pra o app funcionar.
+// Tutorial "Como ativar IP Control na Sony Bravia"
+// Por padrão a Sony bloqueia comandos IP — usuário ativa em
+// Config → Rede → IP Control → Autenticação → "Normal e Chave Pré-Compartilhada".
 
 import { Info, X } from "lucide-react";
 import { useUiStore } from "@/stores/uiStore";
 
 const STEPS: Array<{ title: string; text: string }> = [
   {
-    title: "Abra Configurações na Roku",
-    text: "No menu Home da TV, vá em Configurações → Sistema.",
+    title: "Abra Configurações na Sony",
+    text: "No menu Home da TV, vá em Configurações → Rede (ou Network).",
   },
   {
-    title: "Encontre Controle por dispositivos móveis",
-    text: "Busque por 'Controle por aplicativos móveis' ou 'External Control'. Em Roku TVs do Brasil, geralmente está em Sistema → Controle por dispositivos móveis.",
+    title: "Encontre IP Control",
+    text: "Vá em 'Configurações Home Network' (Home Network Settings) → IP Control. Em modelos com Google TV, pode estar em 'Configurações do dispositivo → Rede e Internet → Configurações avançadas'.",
   },
   {
-    title: "Ative o modo permissivo",
-    text: "Selecione 'Modo de rede' → 'Permissivo' (ou em inglês: Network access → 'Permissive'). Isso libera o Remoctrl pra controlar a TV.",
+    title: "Ative a autenticação por PSK",
+    text: "Em 'Autenticação' selecione 'Normal e Chave Pré-Compartilhada' (Normal and Pre-Shared Key). Em 'Chave Pré-Compartilhada' digite uma chave simples (ex: 0000).",
   },
   {
-    title: "Pronto",
-    text: "Agora abra a tela de adicionar TV no Remoctrl e selecione sua TV.",
+    title: "Use a mesma chave no Remoctrl",
+    text: "Ao adicionar a Sony em '+ TV', cole essa mesma chave no campo 'PSK Sony'. Sem PSK, o Remoctrl não consegue mandar comandos.",
   },
 ];
 
-export function RokuTutorial() {
+export function SonyTutorial() {
   const open = useUiStore((s) => s.tutorialOpen);
   const close = useUiStore((s) => s.closeTutorial);
   const finish = useUiStore((s) => s.finishOnboarding);
@@ -48,7 +48,7 @@ export function RokuTutorial() {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-base font-bold text-gray-900 dark:text-white">Bem-vindo ao Remoctrl</h3>
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">Conectando uma Sony Bravia</h3>
           <button
             onClick={dismiss}
             className="p-1 text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white"
@@ -61,9 +61,7 @@ export function RokuTutorial() {
                         bg-primary/[0.06] border-primary/30 text-gray-800
                         dark:bg-primary/10 dark:text-white">
           <Info className="w-4 h-4 text-primary shrink-0" />
-          <span>
-            Pra controlar uma <b>Roku</b>, você precisa ativar o "Modo Permissivo" uma vez:
-          </span>
+          <span>Funciona em <b>Bravia 2013+</b>, incluindo modelos atuais com Google TV.</span>
         </div>
 
         <div className="space-y-1.5">
@@ -85,7 +83,7 @@ export function RokuTutorial() {
           ))}
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="flex justify-end mt-4">
           <button
             onClick={dismiss}
             className="px-4 py-2 rounded-lg bg-primary hover:bg-sky-400 text-white text-sm font-semibold"

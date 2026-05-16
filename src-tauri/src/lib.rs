@@ -190,6 +190,26 @@ async fn lg_list_apps(host: String, client_key: String) -> Result<Vec<LgApp>, St
         .map_err(|e| e.to_string())
 }
 
+// ───────────────── Sony Bravia (IRCC-IP) ─────────────────
+
+/// Manda uma tecla lógica pra TV Sony. `psk` é a Pre-Shared Key opcional
+/// (se a TV tiver IP Control com autenticação habilitada).
+#[tauri::command]
+async fn sony_send_key(
+    host: String,
+    psk: Option<String>,
+    command: String,
+) -> Result<(), String> {
+    tv::sony::send_key(&host, psk.as_deref(), &command)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn sony_is_reachable(host: String) -> bool {
+    tv::sony::is_reachable(&host).await
+}
+
 // ───────────────── Wake-on-LAN ─────────────────
 
 /// Liga uma TV (LG/Samsung com WoL ativado) via magic packet.
@@ -331,6 +351,9 @@ pub fn run() {
             lg_type_text,
             lg_is_reachable,
             lg_list_apps,
+            // Sony Bravia (IRCC-IP)
+            sony_send_key,
+            sony_is_reachable,
             // Wake-on-LAN
             wake_on_lan,
             // Window

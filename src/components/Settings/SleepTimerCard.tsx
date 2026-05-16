@@ -33,12 +33,14 @@ export function SleepTimerCard() {
   const active = !!fireAt && remaining > 0;
 
   return (
-    <div className="rounded-xl bg-black/25 border border-white/[0.06] p-3">
+    <div className="rounded-xl border p-3
+                    bg-white border-gray-200
+                    dark:bg-black/25 dark:border-white/[0.06]">
       <div className="flex items-start gap-2 mb-2">
         <Moon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white">Sleep timer</div>
-          <div className="text-[11px] text-white/50 leading-snug">
+          <div className="text-sm font-semibold text-gray-900 dark:text-white">Sleep timer</div>
+          <div className="text-[11px] leading-snug text-gray-500 dark:text-white/55">
             {active
               ? `Desligando em ${formatRemaining(remaining)} (${durationMin}min)`
               : "Desliga a TV automaticamente depois de X minutos."}
@@ -48,7 +50,7 @@ export function SleepTimerCard() {
           <button
             onClick={cancel}
             title="Cancelar"
-            className="text-white/40 hover:text-red-400 p-1"
+            className="p-1 text-gray-400 hover:text-red-500 dark:text-white/40 dark:hover:text-red-400"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -65,7 +67,7 @@ export function SleepTimerCard() {
               className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-colors
                 ${isCurrent
                   ? "bg-primary text-white"
-                  : "bg-black/30 text-white/60 hover:bg-black/40 hover:text-white"}`}
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:bg-black/30 dark:text-white/60 dark:hover:bg-black/40 dark:hover:text-white"}`}
             >
               {m}min
             </button>

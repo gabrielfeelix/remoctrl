@@ -68,14 +68,19 @@ export function MacroEditor({ macro, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[420px] bg-[#15181d] border border-white/[0.06] rounded-2xl p-5 my-auto shadow-2xl"
+        className="w-full max-w-[420px] rounded-2xl p-5 my-auto shadow-2xl border
+                   bg-white border-gray-200
+                   dark:bg-[#15181d] dark:border-white/[0.06]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-bold">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">
             {macro ? "Editar macro" : "Nova macro"}
           </h3>
-          <button onClick={onClose} className="text-white/50 hover:text-white p-1">
+          <button
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -85,29 +90,34 @@ export function MacroEditor({ macro, onClose }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nome (ex: Abrir Netflix HDR)"
-          className="w-full bg-black/30 text-white text-sm rounded-lg border border-white/[0.08] px-3 py-2 mb-3 outline-none focus:border-primary"
+          className="w-full text-sm rounded-lg border px-3 py-2 mb-3 outline-none transition-colors
+                     bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
+                     dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
         />
 
         {/* Steps existentes */}
-        <label className="block text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-1.5">
+        <label className="block text-[10px] uppercase tracking-[0.08em] font-bold mb-1.5 text-gray-500 dark:text-white/50">
           Passos · {steps.length}
         </label>
         <div className="space-y-1 mb-3 max-h-40 overflow-y-auto">
           {steps.length === 0 ? (
-            <div className="text-xs text-white/40 px-2 py-3 text-center bg-black/20 rounded-lg">
+            <div className="text-xs px-2 py-3 text-center rounded-lg
+                            text-gray-400 bg-gray-50 dark:text-white/40 dark:bg-black/20">
               Nenhum passo — adicione abaixo.
             </div>
           ) : (
             steps.map((s, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-black/30 border border-white/[0.06]"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md border
+                           bg-gray-50 border-gray-200
+                           dark:bg-black/30 dark:border-white/[0.06]"
               >
-                <span className="text-[10px] text-white/40 font-mono w-5">{i + 1}.</span>
-                <span className="flex-1 text-xs text-white">{stepLabel(s)}</span>
+                <span className="text-[10px] font-mono w-5 text-gray-400 dark:text-white/40">{i + 1}.</span>
+                <span className="flex-1 text-xs text-gray-800 dark:text-white">{stepLabel(s)}</span>
                 <button
                   onClick={() => removeStep(i)}
-                  className="text-white/40 hover:text-red-400"
+                  className="text-gray-400 hover:text-red-500 dark:text-white/40 dark:hover:text-red-400"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -117,7 +127,7 @@ export function MacroEditor({ macro, onClose }: Props) {
         </div>
 
         {/* Adicionar comando */}
-        <label className="block text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-1.5">
+        <label className="block text-[10px] uppercase tracking-[0.08em] font-bold mb-1.5 text-gray-500 dark:text-white/50">
           Adicionar comando
         </label>
         <div className="grid grid-cols-3 gap-1.5 mb-3">
@@ -125,7 +135,9 @@ export function MacroEditor({ macro, onClose }: Props) {
             <button
               key={command}
               onClick={() => addCommand(command)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-[#2a2f37] hover:bg-primary/20 text-white text-[11px]"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px]
+                         bg-gray-100 text-gray-800 hover:bg-primary/15 hover:text-primary
+                         dark:bg-[#2a2f37] dark:text-white dark:hover:bg-primary/20"
             >
               <Icon className="w-3 h-3" />
               {label}
@@ -134,7 +146,7 @@ export function MacroEditor({ macro, onClose }: Props) {
         </div>
 
         {/* Adicionar texto */}
-        <label className="block text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-1.5">
+        <label className="block text-[10px] uppercase tracking-[0.08em] font-bold mb-1.5 text-gray-500 dark:text-white/50">
           Digitar texto
         </label>
         <div className="flex gap-1.5 mb-3">
@@ -143,7 +155,9 @@ export function MacroEditor({ macro, onClose }: Props) {
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             placeholder="Texto a enviar"
-            className="flex-1 bg-black/30 text-white text-xs rounded-md border border-white/[0.08] px-2 py-1.5 outline-none focus:border-primary"
+            className="flex-1 text-xs rounded-md border px-2 py-1.5 outline-none transition-colors
+                       bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
+                       dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
           />
           <button
             onClick={addText}
@@ -154,7 +168,7 @@ export function MacroEditor({ macro, onClose }: Props) {
         </div>
 
         {/* Adicionar delay */}
-        <label className="block text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-1.5">
+        <label className="block text-[10px] uppercase tracking-[0.08em] font-bold mb-1.5 text-gray-500 dark:text-white/50">
           Esperar
         </label>
         <div className="flex gap-1.5 mb-4">
@@ -162,7 +176,9 @@ export function MacroEditor({ macro, onClose }: Props) {
             <button
               key={ms}
               onClick={() => addDelay(ms)}
-              className="flex-1 px-2 py-1.5 rounded-md bg-[#2a2f37] hover:bg-primary/20 text-white text-[11px]"
+              className="flex-1 px-2 py-1.5 rounded-md text-[11px]
+                         bg-gray-100 text-gray-800 hover:bg-primary/15 hover:text-primary
+                         dark:bg-[#2a2f37] dark:text-white dark:hover:bg-primary/20"
             >
               {ms < 1000 ? `${ms}ms` : `${ms / 1000}s`}
             </button>
@@ -172,7 +188,9 @@ export function MacroEditor({ macro, onClose }: Props) {
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-[#2a2f37] hover:bg-[#3d4350] text-white text-sm font-semibold"
+            className="px-4 py-2 rounded-lg text-sm font-semibold
+                       bg-gray-100 text-gray-800 hover:bg-gray-200
+                       dark:bg-[#2a2f37] dark:text-white dark:hover:bg-[#3d4350]"
           >
             Cancelar
           </button>

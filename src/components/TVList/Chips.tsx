@@ -29,8 +29,8 @@ export function TvChips() {
             onClick={() => selectTv(tv.id)}
             className={`group inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold cursor-pointer whitespace-nowrap shrink-0 transition-colors border
               ${active
-                ? "bg-primary/15 border-primary/50 text-white"
-                : "bg-white/[0.03] border-white/[0.06] text-white/60 hover:bg-white/[0.05] hover:text-white"}`}
+                ? "bg-primary/10 border-primary/50 text-gray-900 dark:bg-primary/15 dark:text-white"
+                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:bg-white/[0.03] dark:border-white/[0.06] dark:text-white/60 dark:hover:bg-white/[0.05] dark:hover:text-white"}`}
           >
             {/* Dot de status só na TV ativa — economia visual */}
             {active && (
@@ -57,7 +57,9 @@ export function TvChips() {
       <button
         type="button"
         onClick={openAddTv}
-        className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-white/50 border border-dashed border-white/15 hover:text-white hover:border-primary hover:bg-primary/5 transition-colors shrink-0"
+        className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold border border-dashed transition-colors shrink-0
+                   text-gray-500 border-gray-300 hover:text-primary hover:border-primary hover:bg-primary/5
+                   dark:text-white/50 dark:border-white/15 dark:hover:text-white dark:hover:border-primary dark:hover:bg-primary/5"
       >
         <Plus className="w-3 h-3" />
         TV

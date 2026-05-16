@@ -108,26 +108,29 @@ export function Select<T extends string = string>({
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onKeyDown}
         className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left
-          bg-black/30 border border-white/[0.08] text-white
-          hover:border-white/15
+          bg-white border text-gray-900
+          hover:border-gray-300
           focus:outline-none focus:border-primary
+          dark:bg-black/30 dark:border-white/[0.08] dark:text-white
+          dark:hover:border-white/15
           disabled:opacity-40 disabled:cursor-not-allowed
-          ${open ? "border-primary" : ""}`}
+          ${open ? "!border-primary" : "border-gray-200"}`}
       >
-        <span className={`flex-1 truncate ${current ? "" : "text-white/40"}`}>
+        <span className={`flex-1 truncate ${current ? "" : "text-gray-400 dark:text-white/40"}`}>
           {current?.label ?? placeholder}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-white/40 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`w-3.5 h-3.5 text-gray-400 dark:text-white/40 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
         <div
           ref={menuRef}
-          className="absolute z-50 mt-1 left-0 right-0 max-h-60 overflow-y-auto
-                     rounded-lg border border-white/[0.08] bg-[#15181d] shadow-2xl
-                     py-1"
+          className="absolute z-50 mt-1 left-0 right-0 max-h-60 overflow-y-auto py-1
+                     rounded-lg border shadow-xl
+                     bg-white border-gray-200
+                     dark:bg-[#15181d] dark:border-white/[0.08] dark:shadow-2xl"
         >
           {options.map((o, i) => {
             const selected = o.value === value;
@@ -139,7 +142,9 @@ export function Select<T extends string = string>({
                 onClick={() => choose(o.value)}
                 onMouseEnter={() => setActiveIdx(i)}
                 className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm text-left transition-colors
-                  ${active ? "bg-primary/15 text-white" : "text-white/80 hover:bg-white/5"}`}
+                  ${active
+                    ? "bg-primary/10 text-gray-900 dark:bg-primary/15 dark:text-white"
+                    : "text-gray-700 hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/5"}`}
               >
                 <span className="flex items-center gap-2 min-w-0">
                   {selected ? (
@@ -150,7 +155,7 @@ export function Select<T extends string = string>({
                   <span className="truncate">{o.label}</span>
                 </span>
                 {o.hint && (
-                  <span className="text-[10px] font-mono text-white/40 shrink-0">
+                  <span className="text-[10px] font-mono text-gray-400 dark:text-white/40 shrink-0">
                     {o.hint}
                   </span>
                 )}

@@ -1,62 +1,23 @@
-// Atalhos customizados — bind tecla a Command/Macro.
-// Layout compacto: criar e listar lado a lado, sem stretch desnecessário.
-// Usa o <Select /> próprio do app pra não cair no chrome do SO.
+// Atalhos customizados — view PRINCIPAL é uma lista simples.
+// Criar/editar acontece num modal — não polui a Ajustes com formulário aberto.
 
 import { useState } from "react";
-import { Plus, Trash2, Sparkles, Keyboard } from "lucide-react";
+import { Plus, Pencil, Trash2, Sparkles, Keyboard } from "lucide-react";
 import { useShortcutsStore, type CustomShortcut } from "@/stores/shortcutsStore";
 import { useMacrosStore } from "@/stores/macrosStore";
 import { useIsPro } from "@/stores/licenseStore";
 import { useUiStore } from "@/stores/uiStore";
-import { Select, type SelectOption } from "@/components/Select";
-import type { Command } from "@/lib/commands";
-
-// Comandos rotulados em português (o <select> nativo mostrava só "Up", "Down" etc.)
-const COMMAND_OPTIONS: SelectOption<Command>[] = [
-  { value: "Up", label: "Cima" },
-  { value: "Down", label: "Baixo" },
-  { value: "Left", label: "Esquerda" },
-  { value: "Right", label: "Direita" },
-  { value: "Ok", label: "OK / Selecionar" },
-  { value: "Back", label: "Voltar" },
-  { value: "Home", label: "Início (Home)" },
-  { value: "PlayPause", label: "Play / Pause" },
-  { value: "VolumeUp", label: "Volume +" },
-  { value: "VolumeDown", label: "Volume −" },
-  { value: "Mute", label: "Mudo" },
-  { value: "ChannelUp", label: "Canal +" },
-  { value: "ChannelDown", label: "Canal −" },
-  { value: "PowerOff", label: "Liga / Desliga" },
-];
-
-/** Combo "ctrl+shift+KeyN" → "Ctrl + Shift + N" pra exibição amigável. */
-function prettyCombo(c: string): string {
-  return c
-    .split("+")
-    .map((p) => {
-      const key = p.trim();
-      if (key === "ctrl") return "Ctrl";
-      if (key === "meta") return "⌘";
-      if (key === "alt") return "Alt";
-      if (key === "shift") return "Shift";
-      if (key.startsWith("Key")) return key.slice(3);
-      if (key.startsWith("Digit")) return key.slice(5);
-      return key;
-    })
-    .join(" + ");
-}
+import { ShortcutEditorModal } from "./ShortcutEditorModal";
+import { COMMAND_LABEL, prettyCombo } from "./shortcutUtils";
 
 export function CustomShortcuts() {
   const isPro = useIsPro();
   const openUpgrade = useUiStore((s) => s.openUpgrade);
-  const { items, add, remove, toggle } = useShortcutsStore();
+  const { items, remove, toggle } = useShortcutsStore();
   const macros = useMacrosStore((s) => s.macros);
 
-  const [recording, setRecording] = useState(false);
-  const [combo, setCombo] = useState("");
-  const [targetType, setTargetType] = useState<"command" | "macro">("command");
-  const [commandTarget, setCommandTarget] = useState<Command>("Up");
-  const [macroTarget, setMacroTarget] = useState<string>(macros[0]?.id ?? "");
+  const [editing, setEditing] = useState<CustomShortcut | null>(null);
+  const [creating, setCreating] = useState(false);
 
   if (!isPro) {
     return (
@@ -64,8 +25,8 @@ export function CustomShortcuts() {
         <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/40 grid place-items-center mx-auto mb-2">
           <Keyboard className="w-5 h-5 text-primary" />
         </div>
-        <h4 className="text-sm font-bold text-white">Atalhos é Pro</h4>
-        <p className="text-xs text-white/60 mt-1">
+        <h4 className="text-sm font-bold text-gray-900 dark:text-white">Atalhos é Pro</h4>
+        <p className="text-xs text-gray-500 dark:text-white/60 mt-1">
           Mapeie qualquer tecla pra um comando ou macro.
         </p>
         <button
@@ -78,148 +39,92 @@ export function CustomShortcuts() {
     );
   }
 
-  const startRecording = () => {
-    setRecording(true);
-    setCombo("");
-    const handler = (e: KeyboardEvent) => {
-      e.preventDefault();
-      // Ignora teclas isoladas (sem nada modificador nem letra real)
-      if (["Control", "Meta", "Alt", "Shift"].includes(e.key)) return;
-      const parts: string[] = [];
-      if (e.ctrlKey) parts.push("ctrl");
-      if (e.metaKey) parts.push("meta");
-      if (e.altKey) parts.push("alt");
-      if (e.shiftKey) parts.push("shift");
-      parts.push(e.code);
-      setCombo(parts.join("+").toLowerCase());
-      setRecording(false);
-      window.removeEventListener("keydown", handler, true);
-    };
-    window.addEventListener("keydown", handler, true);
-  };
-
-  const onAdd = () => {
-    if (!combo) return;
-    const target =
-      targetType === "command"
-        ? { kind: "command" as const, command: commandTarget }
-        : { kind: "macro" as const, macroId: macroTarget };
-    if (targetType === "macro" && !macroTarget) return;
-    const sc: Omit<CustomShortcut, "id"> = { combo, enabled: true, target };
-    add(sc);
-    setCombo("");
+  const labelFor = (sc: CustomShortcut): string => {
+    const t = sc.target;
+    if (t.kind === "command") return COMMAND_LABEL[t.command] ?? t.command;
+    const m = macros.find((mm) => mm.id === t.macroId);
+    return `Macro: ${m?.name ?? "removida"}`;
   };
 
   return (
-    <div className="space-y-3">
-      {/* Compositor — uma linha mental: tecla → ação */}
-      <div className="rounded-xl bg-black/25 border border-white/[0.06] p-3 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold w-12 shrink-0">
-            Tecla
-          </span>
+    <div className="space-y-2">
+      {items.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 dark:border-white/[0.08] p-4 text-center">
+          <div className="text-[12px] text-gray-500 dark:text-white/50 mb-2">
+            Nenhum atalho ainda.
+          </div>
           <button
-            onClick={startRecording}
-            className={`flex-1 px-3 py-1.5 rounded-lg border text-xs font-mono text-left transition-colors
-              ${recording
-                ? "border-primary bg-primary/10 text-primary animate-pulse"
-                : combo
-                  ? "border-primary/40 bg-primary/[0.06] text-white"
-                  : "border-white/[0.08] bg-black/30 text-white/50 hover:border-white/15"}`}
+            onClick={() => setCreating(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-sky-400 text-white text-xs font-semibold"
           >
-            {recording ? "Aperte uma tecla…" : combo ? prettyCombo(combo) : "Clique pra gravar"}
+            <Plus className="w-3 h-3" /> Criar primeiro atalho
           </button>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold w-12 shrink-0">
-            Ação
-          </span>
-          <div className="flex-1 flex gap-1.5">
-            <button
-              onClick={() => setTargetType("command")}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors
-                ${targetType === "command"
-                  ? "bg-primary text-white"
-                  : "bg-black/30 text-white/50 hover:text-white"}`}
-            >
-              Comando
-            </button>
-            <button
-              onClick={() => setTargetType("macro")}
-              disabled={macros.length === 0}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-bold disabled:opacity-30 transition-colors
-                ${targetType === "macro"
-                  ? "bg-primary text-white"
-                  : "bg-black/30 text-white/50 hover:text-white"}`}
-            >
-              Macro
-            </button>
-            <div className="flex-1 min-w-0">
-              {targetType === "command" ? (
-                <Select
-                  options={COMMAND_OPTIONS}
-                  value={commandTarget}
-                  onChange={setCommandTarget}
-                />
-              ) : (
-                <Select
-                  options={macros.map((m) => ({ value: m.id, label: m.name }))}
-                  value={macroTarget}
-                  onChange={setMacroTarget}
-                  placeholder="Crie uma macro primeiro"
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={onAdd}
-          disabled={!combo || (targetType === "macro" && !macroTarget)}
-          className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-sky-400 disabled:opacity-40 text-white text-xs font-semibold"
-        >
-          <Plus className="w-3 h-3" /> Adicionar atalho
-        </button>
-      </div>
-
-      {/* Lista — sem header redundante se não há itens */}
-      {items.length > 0 && (
-        <div className="space-y-1">
-          {items.map((sc) => {
-            const t = sc.target;
-            const label =
-              t.kind === "command"
-                ? COMMAND_OPTIONS.find((o) => o.value === t.command)?.label ?? t.command
-                : `Macro: ${macros.find((m) => m.id === t.macroId)?.name ?? "?"}`;
-            return (
+      ) : (
+        <>
+          <div className="space-y-1">
+            {items.map((sc) => (
               <div
                 key={sc.id}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-black/25 border border-white/[0.06]"
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors
+                  bg-gray-50 border-gray-200 hover:border-gray-300
+                  dark:bg-black/25 dark:border-white/[0.06] dark:hover:border-white/[0.12]
+                  ${sc.enabled ? "" : "opacity-50"}`}
               >
                 <input
                   type="checkbox"
                   checked={sc.enabled}
                   onChange={() => toggle(sc.id)}
                   className="accent-primary cursor-pointer"
+                  title={sc.enabled ? "Desativar" : "Ativar"}
                 />
-                <span className="font-mono text-[11px] text-primary bg-primary/10 rounded px-1.5 py-0.5">
+                <span className="font-mono text-[11px] font-bold text-primary bg-primary/10 rounded px-2 py-0.5 shrink-0">
                   {prettyCombo(sc.combo)}
                 </span>
-                <span className="flex-1 text-xs text-white truncate">
-                  → {label}
+                <span className="text-gray-400 dark:text-white/30 text-xs shrink-0">→</span>
+                <span className="flex-1 text-xs text-gray-700 dark:text-white truncate">
+                  {labelFor(sc)}
                 </span>
                 <button
+                  onClick={() => setEditing(sc)}
+                  className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100
+                             dark:text-white/40 dark:hover:text-white dark:hover:bg-white/5"
+                  title="Editar"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                <button
                   onClick={() => remove(sc.id)}
-                  className="text-white/40 hover:text-red-400 p-1"
+                  className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50
+                             dark:text-white/40 dark:hover:text-red-400 dark:hover:bg-red-500/10"
                   title="Apagar"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCreating(true)}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg
+                       border border-dashed text-xs font-semibold transition-colors
+                       border-gray-300 text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5
+                       dark:border-white/[0.08] dark:text-white/50 dark:hover:border-primary dark:hover:text-primary dark:hover:bg-primary/5"
+          >
+            <Plus className="w-3 h-3" /> Novo atalho
+          </button>
+        </>
+      )}
+
+      {(creating || editing) && (
+        <ShortcutEditorModal
+          editing={editing}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+        />
       )}
     </div>
   );

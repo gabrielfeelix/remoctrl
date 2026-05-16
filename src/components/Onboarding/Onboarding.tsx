@@ -6,6 +6,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { RokuTutorial } from "./RokuTutorial";
 import { SamsungTutorial } from "./SamsungTutorial";
 import { LgTutorial } from "./LgTutorial";
+import { SonyTutorial } from "./SonyTutorial";
 
 export function Onboarding() {
   const tv = useTvStore((s) => s.selected());
@@ -20,6 +21,8 @@ export function Onboarding() {
       return <SamsungTutorial />;
     case "lg":
       return <LgTutorial />;
+    case "sony":
+      return <SonyTutorial />;
     default:
       return <RokuTutorial />;
   }

@@ -82,6 +82,8 @@ fn classify(st: &str, usn: &str) -> TvBrand {
         TvBrand::Samsung
     } else if s.contains("lge") || s.contains("webos") {
         TvBrand::Lg
+    } else if s.contains("sony") || s.contains("schemas-sony-com") || s.contains("bravia") {
+        TvBrand::Sony
     } else {
         TvBrand::Unknown
     }
@@ -92,6 +94,7 @@ fn brand_str(b: TvBrand) -> &'static str {
         TvBrand::Roku => "roku",
         TvBrand::Samsung => "samsung",
         TvBrand::Lg => "lg",
+        TvBrand::Sony => "sony",
         TvBrand::Unknown => "unknown",
     }
 }
@@ -101,6 +104,7 @@ fn default_label(brand: TvBrand, host: &str) -> String {
         TvBrand::Roku => format!("Roku ({host})"),
         TvBrand::Samsung => format!("Samsung ({host})"),
         TvBrand::Lg => format!("LG ({host})"),
+        TvBrand::Sony => format!("Sony ({host})"),
         TvBrand::Unknown => format!("TV ({host})"),
     }
 }

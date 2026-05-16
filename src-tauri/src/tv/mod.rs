@@ -13,6 +13,10 @@ pub mod roku;
 pub mod samsung;
 #[allow(dead_code)]
 pub mod lg;
+#[allow(dead_code)]
+pub mod sony;
+#[allow(dead_code)]
+pub mod sony;
 
 /// Identificação de uma TV — usado tanto pra TVs descobertas via SSDP
 /// quanto pras TVs que o usuário já adicionou.
@@ -33,6 +37,8 @@ pub enum TvBrand {
     Roku,
     Samsung,
     Lg,
+    /// Sony Bravia — IRCC-IP via HTTP+SOAP. Auth_token = PSK opcional.
+    Sony,
     /// Marca desconhecida (descoberta SSDP que não casou com nenhum padrão).
     Unknown,
 }
