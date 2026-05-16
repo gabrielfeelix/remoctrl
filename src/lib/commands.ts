@@ -268,6 +268,8 @@ export function commandFromRokuKey(k: RokuKey): Command {
     ChannelUp: "ChannelUp",
     ChannelDown: "ChannelDown",
     PowerOff: "PowerOff",
+    PowerOn: "PowerOff",
+    Power: "PowerOff",
     InputTuner: "InputTuner",
     InputHDMI1: "InputHDMI1",
     InputHDMI2: "InputHDMI2",

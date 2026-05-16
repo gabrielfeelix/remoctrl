@@ -13,6 +13,7 @@ import {
   Power, Play, Pause, Rewind, FastForward, RotateCcw, Info as InfoIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { useTvStore } from "@/stores/tvStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useToast } from "@/components/Toast";
@@ -64,7 +65,14 @@ export function RemoteShell() {
     }
   };
 
-  /** Power inteligente — manda PowerOff. Se a TV está down e tem MAC, manda WoL. */
+  /** Power inteligente. Estratégia em camadas:
+   *   1. Roku TV: tenta `roku_send_key PowerOn` PRIMEIRO. Roku tem ECP separado
+   *      pra ON/OFF; com Fast TV Start o servidor ECP fica vivo mesmo com TV
+   *      "desligada", então PowerOn funciona sem precisar de WoL. Mais
+   *      confiável que magic packet — que muitos modelos Roku ignoram.
+   *   2. WoL com MAC: fallback se PowerOn falhar ou marca não-Roku.
+   *   3. PowerOff normal: quando TV está ligada (status=ok).
+   *   4. Sem MAC + TV offline: abre EditTvModal direto. */
   const onPower = async () => {
     setFlashKey("PowerOff");
     setTimeout(() => setFlashKey(null), 140);
@@ -72,31 +80,56 @@ export function RemoteShell() {
       showToast("Selecione uma TV primeiro", "err");
       return;
     }
-    // TV alcançável → toggle padrão (PowerOff). Não-alcançável + MAC → WoL.
-    if (status === "down" && tv.mac && isTauri()) {
-      try {
-        await wakeOnLan(tv.mac);
-        showToast(`Ligando ${tv.label}…`);
-      } catch (e) {
-        showToast(e instanceof Error ? e.message : "WoL falhou", "err");
+
+    // CASO TV-OFFLINE: precisa LIGAR de volta
+    if (status === "down" && isTauri()) {
+      // 1. Roku ECP PowerOn — funciona em modelos com Fast TV Start ligado
+      if (tv.brand === "roku") {
+        try {
+          await invoke("roku_send_key", { host: tv.host, key: "PowerOn" });
+          showToast(`Ligando ${tv.label}…`);
+          return;
+        } catch {
+          /* cai pra WoL */
+        }
       }
+      // 2. WoL com magic packet (precisa de MAC)
+      if (tv.mac) {
+        try {
+          await wakeOnLan(tv.mac);
+          showToast(`Ligando ${tv.label}… (Wake-on-LAN)`);
+          return;
+        } catch (e) {
+          showToast(e instanceof Error ? e.message : "WoL falhou", "err");
+          return;
+        }
+      }
+      // 3. Sem MAC nem ECP — abre Editar pra usuário colar o MAC
+      showToast("TV offline — configure o MAC pra conseguir ligar de volta");
+      openEditTv(tv.id);
       return;
     }
+
+    // CASO TV-LIGADA: desligar (toggle padrão)
     try {
       await sendCommand(tv, "PowerOff");
     } catch (e) {
-      // Se a TV não respondeu E temos MAC, tenta WoL como fallback
+      // Mesmo "ok" pode ter ido offline entre o ping e o comando — tenta o
+      // mesmo fallback chain do caso offline.
+      if (tv.brand === "roku" && isTauri()) {
+        try {
+          await invoke("roku_send_key", { host: tv.host, key: "PowerOn" });
+          showToast(`Ligando ${tv.label}…`);
+          return;
+        } catch { /* segue */ }
+      }
       if (tv.mac && isTauri()) {
         try {
           await wakeOnLan(tv.mac);
-          showToast(`Ligando ${tv.label}… (tentando WoL)`);
+          showToast(`Ligando ${tv.label}… (Wake-on-LAN)`);
           return;
-        } catch {
-          /* cai pra o erro original abaixo */
-        }
+        } catch { /* segue */ }
       }
-      // Sem MAC + TV offline = abre o EditTvModal direto, com toast curto.
-      // UX: usuário clica Power → 1 clique pro fix, em vez de 3 (toast → chip → pencil → modal).
       const offline =
         e instanceof Error &&
         (e.message.includes("falhou") || e.message.includes("connection") || e.message.includes("respondeu"));

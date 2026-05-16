@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Power, VolumeX, Volume1, Volume2, Maximize2, X,
+  Power, Volume1, Volume2, Maximize2, X, Home, ChevronLeft, Play, Pause,
 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useTvStore } from "@/stores/tvStore";
@@ -147,8 +147,26 @@ export function WidgetRemote() {
           </button>
         </header>
 
+        {/* Top row: Power | Home — 26px */}
+        <div className="grid grid-cols-2 gap-1 px-1.5 pt-1.5">
+          <button
+            onClick={onPower}
+            title={status === "down" ? "Ligar TV" : "Liga/Desliga"}
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
+          >
+            <Power className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => dispatch("Home")}
+            title="Home"
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Home")}`}
+          >
+            <Home className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         {/* DPad compacto 130x130, centralizado */}
-        <div className="flex-1 flex items-center justify-center p-1.5">
+        <div className="flex-1 flex items-center justify-center px-1.5 py-1">
           <div className="relative w-[130px] h-[130px]">
             <motion.button
               whileTap={PRESS}
@@ -183,35 +201,36 @@ export function WidgetRemote() {
           </div>
         </div>
 
-        {/* Vol-/mute/vol+/power — 28px de altura */}
-        <div className="grid grid-cols-4 gap-1 p-1.5 pt-0">
+        {/* Bottom row: Voltar | Vol− | Vol+ | Play/Pause — 26px */}
+        <div className="grid grid-cols-4 gap-1 px-1.5 pb-1.5">
+          <button
+            onClick={() => dispatch("Back")}
+            title="Voltar"
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Back")}`}
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
           <button
             {...volDown}
-            title="Volume −"
-            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
+            title="Volume − (segure)"
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
           >
             <Volume1 className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => dispatch("Mute")}
-            title="Mudo"
-            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Mute")}`}
-          >
-            <VolumeX className="w-3.5 h-3.5" />
-          </button>
-          <button
             {...volUp}
-            title="Volume +"
-            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
+            title="Volume + (segure)"
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
           >
             <Volume2 className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={onPower}
-            title={status === "down" && tv?.mac ? "Ligar TV (WoL)" : "Liga/Desliga"}
-            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
+            onClick={() => dispatch("PlayPause")}
+            title="Play / Pause"
+            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("PlayPause")}`}
           >
-            <Power className="w-3.5 h-3.5" />
+            <Play className="w-3 h-3" fill="currentColor" />
+            <Pause className="w-3 h-3 -ml-0.5" fill="currentColor" />
           </button>
         </div>
       </main>

@@ -36,17 +36,19 @@ interface BrandGuide {
 const GUIDES: Partial<Record<TvBrand, BrandGuide>> = {
   roku: {
     reliable: "medium",
-    reliabilityNote: "Roku TV: WoL só funciona com 'Início Rápido da TV' ligado.",
+    reliabilityNote:
+      "Roku TV: WoL é instável. O Remoctrl prioriza um wake via ECP (mais confiável) e cai pra WoL se falhar.",
     macSteps: [
-      "No controle da TV, abra o menu Home",
-      "Ajustes → Sistema → Sobre",
-      "Anote 'Endereço Wi-Fi' (ou Ethernet se estiver cabeado)",
+      "No controle, aperte Home e abra Configurações",
+      "Sistema → Sobre",
+      "Role até o fim e clique em 'Detalhes' (More info)",
+      "Procure 'Endereço Wi-Fi' (ou Ethernet, se for cabo)",
     ],
     wolName: "Início Rápido da TV",
     wolSteps: [
-      "Ajustes → Sistema → Energia",
-      "Ative 'Início Rápido da TV'",
-      "(opcional) Ative 'Modo de espera com rede'",
+      "Configurações → Sistema → Energia",
+      "Ative 'Início Rápido da TV' (mantém o ECP vivo — chave pro Power-On)",
+      "(opcional) Procure 'Standby de rede' / 'Network standby' se existir",
     ],
   },
   samsung: {

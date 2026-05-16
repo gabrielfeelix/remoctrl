@@ -50,6 +50,6 @@ export type RokuKey =
   | "Play" | "Rev" | "Fwd" | "InstantReplay" | "Info"
   | "VolumeUp" | "VolumeDown" | "VolumeMute"
   | "ChannelUp" | "ChannelDown"
-  | "PowerOff"
+  | "PowerOff" | "PowerOn" | "Power"
   | "InputTuner" | "InputHDMI1" | "InputHDMI2" | "InputHDMI3" | "InputHDMI4" | "InputAV1"
   | "Search" | "Enter" | "Backspace";
