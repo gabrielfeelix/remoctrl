@@ -327,6 +327,8 @@ fn register_show_shortcut(app: AppHandle, combo: String) -> Result<(), String> {
     let manager = app.global_shortcut();
     // Limpa qualquer registro anterior pra evitar duplicatas
     let _ = manager.unregister_all();
+    // Clone pro emit dentro da closure; o original fica disponível pro map_err.
+    let combo_for_event = combo.clone();
     manager
         .on_shortcut(combo.as_str(), move |app, _shortcut, event| {
             use tauri_plugin_global_shortcut::ShortcutState;
@@ -343,7 +345,7 @@ fn register_show_shortcut(app: AppHandle, combo: String) -> Result<(), String> {
                 } else {
                     let _ = w.set_focus();
                 }
-                let _ = app.emit("global-shortcut-fired", &combo);
+                let _ = app.emit("global-shortcut-fired", &combo_for_event);
             }
         })
         .map_err(|e| format!("registro falhou ({}): {e}. Combo ocupado pelo SO?", combo))
