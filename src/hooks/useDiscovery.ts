@@ -14,7 +14,10 @@ export function useDiscovery() {
 
   const scan = useCallback(async (timeoutMs = 3000) => {
     if (!isTauri()) {
-      setError("Discovery só funciona no app desktop (Tauri).");
+      // Em pré-visualização do navegador, busca de rede não funciona.
+      // Silenciamos pra deixar o estado "vazio" do modal cuidar disso.
+      setError(null);
+      setResults([]);
       return [];
     }
     setScanning(true);

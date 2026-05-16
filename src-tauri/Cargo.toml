@@ -22,6 +22,8 @@ tauri-plugin-shell = "2"
 # Sprint 1 — atalho global (Ctrl+Shift+N) + persistência de TVs/configs
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-store = "2"
+# Notificações nativas do SO — usadas pelo sleep timer e discovery em background.
+tauri-plugin-notification = "2"
 # Garante que só uma instância roda — clicar no ícone com app no tray foca a janela
 # em vez de spawnar duplicata travada na porta IPC.
 tauri-plugin-single-instance = "2"

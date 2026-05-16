@@ -56,7 +56,6 @@ export function TitleBar() {
 
   const onToggleAot = async () => {
     if (!isTauri()) {
-      showToast("Disponível só no app desktop", "err");
       return;
     }
     const next = !alwaysOnTop;
@@ -80,7 +79,6 @@ export function TitleBar() {
 
   const onToggleFullscreen = async () => {
     if (!isTauri()) {
-      showToast("Disponível só no app desktop", "err");
       return;
     }
     try {

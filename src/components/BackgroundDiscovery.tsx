@@ -13,6 +13,7 @@ import { useTvStore } from "@/stores/tvStore";
 import { useToast } from "@/components/Toast";
 import { useUiStore } from "@/stores/uiStore";
 import { discoverTvs, isTauri } from "@/lib/tauri";
+import { notify } from "@/lib/notify";
 
 const INTERVAL_MS = 8 * 60 * 1000; // 8 minutos
 
@@ -43,9 +44,14 @@ export function BackgroundDiscovery() {
           if (alreadySaved || alerted.current.has(key)) continue;
           alerted.current.add(key);
           showToast(`Nova TV detectada: ${tv.label} — abra o + TV pra adicionar`);
-          // Convidativo, sem ser intrusivo: 1 toast, usuário decide.
-          // Se ele quiser, abre o modal e a TV já aparece nos resultados.
-          break; // 1 toast por scan; evita avalanche se muitas TVs novas
+          // Notificação nativa do SO — útil quando o app está minimizado
+          // ou na tray. Best-effort: silenciosa se sem permissão.
+          notify(
+            "Nova TV detectada",
+            `${tv.label} apareceu na sua rede. Abra o Remoctrl pra adicionar.`,
+          );
+          // Convidativo, sem ser intrusivo: 1 alerta por scan, usuário decide.
+          break; // evita avalanche se muitas TVs novas
         }
       } catch {
         // Silencioso — background scan não pode "incomodar" se rede flap

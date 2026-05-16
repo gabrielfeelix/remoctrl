@@ -27,10 +27,8 @@ export function AppShortcutsRow() {
   if (top.length === 0) return null;
 
   const launch = async (r: (typeof top)[number]) => {
-    if (!isTauri()) {
-      showToast("Disponível só no app desktop", "err");
-      return;
-    }
+    // No preview do navegador comandos não saem da janela — não polui com toast.
+    if (!isTauri()) return;
     try {
       if (tv.brand === "roku") {
         await invoke("roku_launch_app", { host: tv.host, appId: r.appId });

@@ -101,7 +101,7 @@ export function RemoteShell() {
   useKeyboard({
     onKey: (rk) => dispatch(commandFromRokuKey(rk), rk),
     onSlash: () => {
-      const el = document.querySelector<HTMLInputElement>("input[placeholder*='Digite']");
+      const el = document.querySelector<HTMLInputElement>("input[placeholder*='Buscar']");
       el?.focus();
     },
     disabled: !tv,

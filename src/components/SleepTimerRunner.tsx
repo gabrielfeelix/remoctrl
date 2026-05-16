@@ -8,6 +8,7 @@ import { useSleepTimerStore } from "@/stores/sleepTimerStore";
 import { useTvStore } from "@/stores/tvStore";
 import { useToast } from "@/components/Toast";
 import { sendCommand } from "@/lib/commands";
+import { notify } from "@/lib/notify";
 
 export function SleepTimerRunner() {
   const fireAt = useSleepTimerStore((s) => s.fireAt);
@@ -27,8 +28,10 @@ export function SleepTimerRunner() {
         try {
           await sendCommand(tv, "PowerOff");
           showToast(`Boa noite — ${tv.label} desligada`);
+          notify("Sleep timer", `${tv.label} foi desligada. Boa noite!`);
         } catch {
           showToast("Sleep timer disparou, mas TV não respondeu", "err");
+          notify("Sleep timer", "TV não respondeu — verifique se ainda está ligada.");
         }
         return;
       }

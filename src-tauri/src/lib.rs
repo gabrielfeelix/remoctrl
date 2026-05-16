@@ -238,7 +238,8 @@ pub fn run() {
 
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_store::Builder::new().build());
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_notification::init());
 
     // Single-instance: causa crash em WSLg/algumas distros Linux por conflito
     // com D-Bus session bus. Desabilitado temporariamente — focar janela

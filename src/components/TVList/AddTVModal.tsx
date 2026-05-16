@@ -32,7 +32,7 @@ export function AddTVModal() {
   const open = useUiStore((s) => s.addTvModalOpen);
   const close = useUiStore((s) => s.closeAddTv);
   const { addTv, updateTv } = useTvStore();
-  const { scan, scanning, results, error } = useDiscovery();
+  const { scan, scanning, results } = useDiscovery();
   const showToast = useToast((s) => s.show);
 
   const [label, setLabel] = useState("");
@@ -203,10 +203,11 @@ export function AddTVModal() {
                 <Tv2 className="w-5 h-5 text-white/40" />
               </div>
               <div className="text-sm font-semibold text-white">
-                Nenhuma TV detectada
+                Nenhuma TV encontrada
               </div>
-              <div className="text-[11px] text-white/50 mt-1 leading-snug max-w-[260px]">
-                {error ?? "Verifique se a TV está ligada e na mesma rede Wi-Fi do PC."}
+              <div className="text-[11px] text-white/55 mt-1 leading-snug max-w-[280px]">
+                A TV precisa estar <strong className="text-white">ligada</strong>{" "}
+                e na <strong className="text-white">mesma rede Wi-Fi</strong> do PC.
               </div>
               <button
                 onClick={() => scan(4000)}
@@ -215,6 +216,32 @@ export function AddTVModal() {
                 <RefreshCw className="w-3 h-3" />
                 Procurar de novo
               </button>
+
+              {/* Dica de permissão — alguns modelos exigem aprovação na TV.
+                  Pequena, conversacional, fora do "ruído" principal. */}
+              <details className="mt-3 max-w-[300px] text-left group">
+                <summary className="text-[10px] uppercase tracking-[0.08em] text-white/40 font-bold cursor-pointer hover:text-white/60 list-none flex items-center gap-1">
+                  <span className="group-open:rotate-90 inline-block transition-transform">›</span>
+                  Não aparece nada?
+                </summary>
+                <ul className="mt-2 space-y-1.5 text-[11px] text-white/55 leading-snug pl-2">
+                  <li>
+                    <strong className="text-white/80">Samsung / LG:</strong> no primeiro uso
+                    a TV mostra um pop-up pedindo permissão — aceite no controle físico.
+                    Se você já recusou antes, ative em
+                    <span className="text-white/70"> Configurações → Externo → Gerenciador de dispositivos</span>.
+                  </li>
+                  <li>
+                    <strong className="text-white/80">Roku:</strong> ative
+                    <span className="text-white/70"> Modo Permissivo</span> em
+                    Ajustes → Sistema → Avançado → Controle por outros aparelhos.
+                  </li>
+                  <li>
+                    Se o problema persistir, use <strong className="text-white/80">Adicionar manualmente</strong> abaixo
+                    com o IP da TV.
+                  </li>
+                </ul>
+              </details>
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@
 // Backspace correto: manda a tecla `Backspace` do ECP Roku (deleta na keyboard
 // da TV), NÃO `Back` (que navegaria pra trás na home).
 
-import { Keyboard, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useTvStore } from "@/stores/tvStore";
@@ -92,33 +92,27 @@ export function InlineTypeBar() {
     }
   };
 
-  const placeholder = !tv
-    ? "Selecione uma TV"
-    : tv.brand === "samsung"
-    ? "Type-on-TV indisponível"
-    : tv.brand === "lg"
-    ? "Digite e Enter envia…"
-    : "Digite — vai pra TV";
-
+  // Placeholder constante — sem mensagens contextuais ("Selecione uma TV…").
+  // Quando não há TV, o input fica visualmente desabilitado.
   return (
     <div
-      className={`flex-1 min-w-0 flex items-center gap-1.5 px-3 h-11 rounded-2xl
+      className={`flex-1 min-w-0 flex items-center gap-1.5 px-3 h-11 rounded-full
                   border transition-colors
                   ${supportsType
-                    ? "border-white/[0.06] bg-[#1f242b] focus-within:border-primary/60 focus-within:bg-[#23282f]"
+                    ? "border-white/[0.08] bg-[#1f242b] focus-within:border-primary/60 focus-within:bg-[#23282f]"
                     : "border-white/[0.04] bg-white/[0.02] opacity-50"}`}
     >
-      <Keyboard className="w-4 h-4 text-white/40 shrink-0" />
+      <Search className="w-4 h-4 text-white/40 shrink-0" />
       <input
         ref={inputRef}
         type="text"
         autoComplete="off"
         spellCheck={false}
-        placeholder={placeholder}
+        placeholder="Buscar…"
         disabled={!supportsType}
         onChange={(e) => setHasText(e.target.value.length > 0)}
         onKeyDown={onKeyDown}
-        className="flex-1 min-w-0 bg-transparent text-white text-[13px] font-medium outline-none placeholder:text-white/35 disabled:cursor-not-allowed"
+        className="flex-1 min-w-0 bg-transparent text-white text-[13px] font-medium outline-none placeholder:text-white/40 disabled:cursor-not-allowed"
       />
       {hasText && (
         <button

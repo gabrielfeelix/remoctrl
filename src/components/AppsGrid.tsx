@@ -87,10 +87,8 @@ export function AppsGrid() {
       showToast("Selecione uma TV primeiro", "err");
       return;
     }
-    if (!isTauri()) {
-      showToast("Disponível só no app desktop", "err");
-      return;
-    }
+    // No preview do navegador o launch nem sai — silencia em vez de poluir.
+    if (!isTauri()) return;
     try {
       if (tv.brand === "roku") {
         await invoke("roku_launch_app", { host: tv.host, appId: app.id });

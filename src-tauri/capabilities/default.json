@@ -18,6 +18,7 @@
     "core:tray:default",
     "shell:default",
     "global-shortcut:default",
-    "store:default"
+    "store:default",
+    "notification:default"
   ]
 }
