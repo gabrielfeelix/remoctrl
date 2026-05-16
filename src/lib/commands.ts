@@ -114,6 +114,10 @@ export async function sendCommand(tv: TvDevice, cmd: Command): Promise<void> {
       });
       return;
     }
+    case "philips": {
+      await invoke("philips_send_key", { host: tv.host, command: cmd });
+      return;
+    }
     default:
       throw new Error(`Marca '${tv.brand}' não suportada`);
   }
@@ -143,6 +147,7 @@ export async function sendText(tv: TvDevice, text: string): Promise<void> {
       return;
     case "samsung":
     case "sony":
+    case "philips":
       throw new Error(`Type-on-TV não suportado em ${tv.brand}`);
     default:
       throw new Error(`Marca '${tv.brand}' não suportada`);
@@ -168,6 +173,8 @@ export async function probeReachability(tv: TvDevice): Promise<boolean> {
       ? "lg_is_reachable"
       : tv.brand === "sony"
       ? "sony_is_reachable"
+      : tv.brand === "philips"
+      ? "philips_is_reachable"
       : null;
   if (!cmd) return false;
   return invoke<boolean>(cmd, { host: tv.host });
@@ -181,6 +188,42 @@ export async function openSearch(tv: TvDevice, query: string): Promise<void> {
     return;
   }
   throw new Error("Busca direta só está pronta para Roku no Sprint 2");
+}
+
+/** Lança um app por marca. `appId` é o identificador no formato esperado
+ * pela marca (Roku channel id, LG appId, package/.Activity em Android TV,
+ * URI sony/appControl em Sony). */
+export async function launchApp(tv: TvDevice, appId: string): Promise<void> {
+  if (!isTauri()) return;
+  switch (tv.brand) {
+    case "roku":
+      await invoke("roku_launch_app", { host: tv.host, appId });
+      return;
+    case "lg":
+      if (!tv.auth_token) throw new Error("LG não pareada");
+      await invoke("lg_launch_app", {
+        host: tv.host,
+        clientKey: tv.auth_token,
+        appId,
+      });
+      return;
+    case "androidtv":
+      await invoke("androidtv_launch_app", {
+        host: tv.host,
+        port: tv.port ?? 5555,
+        component: appId,
+      });
+      return;
+    case "sony":
+      await invoke("sony_launch_app", {
+        host: tv.host,
+        psk: tv.auth_token ?? null,
+        uri: appId,
+      });
+      return;
+    default:
+      throw new Error(`Launch direto de app não suportado em ${tv.brand}`);
+  }
 }
 
 /** Pareamento — só faz sentido em Samsung/LG (Roku usa Modo Permissivo). */

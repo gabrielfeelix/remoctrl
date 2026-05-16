@@ -9,7 +9,7 @@ import type { Command } from "@/lib/commands";
 export type MacroStep =
   | { type: "command"; command: Command }
   | { type: "text"; text: string }
-  | { type: "app"; appId: string; brand: "roku" | "lg" }
+  | { type: "app"; appId: string; brand: "roku" | "lg" | "sony" | "androidtv" }
   | { type: "delay"; ms: number };
 
 export interface Macro {

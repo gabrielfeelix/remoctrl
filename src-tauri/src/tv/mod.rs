@@ -17,6 +17,8 @@ pub mod lg;
 pub mod sony;
 #[allow(dead_code)]
 pub mod androidtv;
+#[allow(dead_code)]
+pub mod philips;
 
 /// Identificação de uma TV — usado tanto pra TVs descobertas via SSDP
 /// quanto pras TVs que o usuário já adicionou.
@@ -44,6 +46,9 @@ pub enum TvBrand {
     /// "porta:porta" da depuração sem fio (porta dinâmica em Android 11+).
     #[serde(rename = "androidtv")]
     AndroidTv,
+    /// Philips JointSpace v1 (HTTP 1925, sem auth). Cobre SAPHI/NetTV + alguns
+    /// Android TV antigos. Modelos novos (2019+) com v6 devem usar Android TV.
+    Philips,
     /// Marca desconhecida (descoberta SSDP que não casou com nenhum padrão).
     Unknown,
 }

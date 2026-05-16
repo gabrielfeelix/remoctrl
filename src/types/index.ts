@@ -1,7 +1,7 @@
 // Tipos espelhando os structs do Rust em src-tauri/src/tv/.
 // Mantenha em sincronia com mod.rs e roku.rs.
 
-export type TvBrand = "roku" | "samsung" | "lg" | "sony" | "androidtv" | "unknown";
+export type TvBrand = "roku" | "samsung" | "lg" | "sony" | "androidtv" | "philips" | "unknown";
 
 export interface TvDevice {
   id: string;

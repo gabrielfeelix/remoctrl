@@ -21,6 +21,7 @@ const BRAND_LABEL: Record<TvBrand, string> = {
   lg: "LG",
   sony: "Sony",
   androidtv: "Android TV",
+  philips: "Philips",
   unknown: "Outra",
 };
 
@@ -30,6 +31,7 @@ const MANUAL_BRANDS: Array<{ value: TvBrand; label: string }> = [
   { value: "lg", label: "LG" },
   { value: "sony", label: "Sony" },
   { value: "androidtv", label: "Android TV" },
+  { value: "philips", label: "Philips" },
 ];
 
 export function AddTVModal() {

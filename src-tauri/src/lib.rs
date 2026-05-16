@@ -210,6 +210,17 @@ async fn sony_is_reachable(host: String) -> bool {
     tv::sony::is_reachable(&host).await
 }
 
+#[tauri::command]
+async fn sony_launch_app(
+    host: String,
+    psk: Option<String>,
+    uri: String,
+) -> Result<(), String> {
+    tv::sony::launch_app(&host, psk.as_deref(), &uri)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 // ───────────────── Android TV / Google TV (ADB) ─────────────────
 
 /// Manda um comando lógico pra TV Android via ADB.
@@ -239,6 +250,31 @@ async fn androidtv_type_text(
 #[tauri::command]
 async fn androidtv_is_reachable(host: String, port: u16) -> bool {
     tv::androidtv::is_reachable(&host, port).await
+}
+
+#[tauri::command]
+async fn androidtv_launch_app(
+    host: String,
+    port: u16,
+    component: String,
+) -> Result<(), String> {
+    tv::androidtv::launch_app(&host, port, &component)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+// ───────────────── Philips JointSpace ─────────────────
+
+#[tauri::command]
+async fn philips_send_key(host: String, command: String) -> Result<(), String> {
+    tv::philips::send_key(&host, &command)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn philips_is_reachable(host: String) -> bool {
+    tv::philips::is_reachable(&host).await
 }
 
 // ───────────────── Wake-on-LAN ─────────────────
@@ -385,10 +421,15 @@ pub fn run() {
             // Sony Bravia (IRCC-IP)
             sony_send_key,
             sony_is_reachable,
+            sony_launch_app,
             // Android TV / Google TV (ADB)
             androidtv_send_key,
             androidtv_type_text,
             androidtv_is_reachable,
+            androidtv_launch_app,
+            // Philips JointSpace v1
+            philips_send_key,
+            philips_is_reachable,
             // Wake-on-LAN
             wake_on_lan,
             // Window

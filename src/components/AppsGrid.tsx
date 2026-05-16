@@ -110,9 +110,20 @@ export function AppsGrid() {
           clientKey: tv.auth_token,
           appId: app.id,
         });
+      } else if (tv.brand === "androidtv") {
+        await invoke("androidtv_launch_app", {
+          host: tv.host,
+          port: tv.port ?? 5555,
+          component: app.id,
+        });
+      } else if (tv.brand === "sony") {
+        await invoke("sony_launch_app", {
+          host: tv.host,
+          psk: tv.auth_token ?? null,
+          uri: app.id,
+        });
       } else {
-        // Samsung / Sony: protocolo do remoto não tem "launch app" universal.
-        // Fallback: Home + setas. Aviso amigável.
+        // Samsung: protocolo do remoto não tem "launch app" universal.
         showToast(
           `${BRAND_HOME_HINT[tv.brand] ?? "Esta TV"} não tem atalho direto pra apps — use Home + setas.`,
           "err",

@@ -119,3 +119,45 @@ pub async fn is_reachable(host: &str) -> bool {
         Ok(Ok(_))
     )
 }
+
+/// Lança um app via REST API da Sony (`sony/appControl`).
+/// `uri` é o identificador interno do app no formato Sony, ex:
+///   `com.sony.dtv.com.netflix.ninja.com.netflix.ninja.NetflixActivity`
+///
+/// Diferente do IRCC (`sony/IRCC`), o appControl exige JSON-RPC com
+/// PSK no mesmo header `X-Auth-PSK`. Sem PSK funciona se o IP Control
+/// estiver em "Normal" (sem auth).
+pub async fn launch_app(host: &str, psk: Option<&str>, uri: &str) -> Result<()> {
+    let url = format!("http://{}/sony/appControl", host);
+    let body = serde_json::json!({
+        "method": "setActiveApp",
+        "id": 1,
+        "params": [{ "uri": uri }],
+        "version": "1.0"
+    });
+    let mut req = client()
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .body(body.to_string());
+    if let Some(k) = psk.filter(|s| !s.is_empty()) {
+        req = req.header("X-Auth-PSK", k);
+    }
+    let res = req
+        .send()
+        .await
+        .with_context(|| format!("POST {url} falhou"))?;
+    let status = res.status();
+    let text = res.text().await.unwrap_or_default();
+    if !status.is_success() {
+        return Err(anyhow!(
+            "Sony appControl respondeu {status} — corpo: {text}"
+        ));
+    }
+    // A API JSON-RPC pode devolver 200 mas com erro embutido. Detecta.
+    if text.contains("\"error\"") {
+        return Err(anyhow!(
+            "Sony app não disponível ('{uri}'): {text}"
+        ));
+    }
+    Ok(())
+}

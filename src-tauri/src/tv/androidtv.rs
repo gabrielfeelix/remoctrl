@@ -127,3 +127,28 @@ pub async fn is_reachable(host: &str, port: u16) -> bool {
         Ok(Ok(_))
     )
 }
+
+/// Lança um app via `am start`. `component` é do formato
+/// `package.name/.MainActivity` ou `package.name/package.name.SomeActivity`.
+pub async fn launch_app(host: &str, port: u16, component: &str) -> Result<()> {
+    let addr = parse_addr(host, port)?;
+    // Sanity: evita injection. Component só pode ter chars válidos.
+    if !component
+        .chars()
+        .all(|c| c.is_alphanumeric() || matches!(c, '.' | '/' | '_'))
+    {
+        return Err(anyhow!("Component inválido: '{component}'"));
+    }
+    let cmd = format!("am start -n {}", component);
+    tokio::task::spawn_blocking(move || -> Result<()> {
+        use adb_client::{tcp::ADBTcpDevice, ADBDeviceExt};
+        let mut device = ADBTcpDevice::new(addr)
+            .with_context(|| format!("Não conectei na TV em {addr}"))?;
+        device
+            .shell_command(&cmd, None, None)
+            .with_context(|| format!("'{cmd}' falhou — app instalado? Component certo?"))?;
+        Ok(())
+    })
+    .await??;
+    Ok(())
+}
