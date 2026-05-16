@@ -91,6 +91,11 @@ function App() {
 
   // Redimensiona a janela quando entra/sai do widget mode.
   // Widget = mini-window no canto superior esquerdo, only the essentials.
+  //
+  // BUG histórico: setSize sozinho era ignorado pelo Windows — a janela
+  // mantinha a altura anterior e o flex-1 esticava o conteúdo. Solução:
+  // PINAR a janela com setMaxSize == setSize. Aí o Windows é obrigado a
+  // respeitar (não há outra hipótese de tamanho).
   useEffect(() => {
     if (!isTauri()) return;
     (async () => {
@@ -99,17 +104,24 @@ function App() {
         const { getCurrentWindow } = await import("@tauri-apps/api/window");
         const win = getCurrentWindow();
         if (widgetMode) {
-          // BEEEEEEEM pequeno: 160×220 (era 190×260). Cabe no canto.
-          await win.setMinSize(new LogicalSize(150, 200));
-          await win.setSize(new LogicalSize(160, 220));
+          const W = 160, H = 220;
+          // Ordem importa:
+          //   1. Limpa maxSize (caso tenha ficado de algum estado anterior)
+          //   2. Aperta min DOWN pro tamanho que queremos
+          //   3. setSize pro tamanho exato
+          //   4. PIN com maxSize igual ao size — força Windows a respeitar
+          await win.setMaxSize(null).catch(() => {});
+          await win.setMinSize(new LogicalSize(W, H));
+          await win.setSize(new LogicalSize(W, H));
+          await win.setMaxSize(new LogicalSize(W, H));
           await win.setAlwaysOnTop(true);
-          // Top-left com mesma margem que o app normal — só o tamanho muda.
           await win.setPosition(new LogicalPosition(24, 60));
         } else {
-          // Devolve o minSize normal — sem isso o setSize abaixo é clampado.
+          const W = 480, H = 760;
+          // Volta pro modo normal: libera max, devolve min, set size, posiciona
+          await win.setMaxSize(null).catch(() => {});
           await win.setMinSize(new LogicalSize(360, 600));
-          await win.setSize(new LogicalSize(480, 760));
-          // Reforça posição depois do resize (alguns WMs reposicionam).
+          await win.setSize(new LogicalSize(W, H));
           await win.setPosition(new LogicalPosition(24, 60));
         }
       } catch {
