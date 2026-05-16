@@ -311,6 +311,36 @@ fn hide_main_window(app: AppHandle) {
     }
 }
 
+/// Aplica TAMANHO + POSIÇÃO da janela atomicamente.
+/// Usa `set_inner_size` (área de conteúdo) em vez de `set_size` (outer),
+/// que tem bug conhecido no Windows com `decorations: false` — outer
+/// não encolhe abaixo do "mínimo de janela" do SO (~150px).
+/// `set_inner_size` ignora esse mínimo porque mede o conteúdo, não o frame.
+#[tauri::command]
+fn set_window_bounds(
+    app: AppHandle,
+    width: f64,
+    height: f64,
+    x: i32,
+    y: i32,
+) -> Result<(), String> {
+    use tauri::{LogicalPosition, LogicalSize};
+    let win = app
+        .get_webview_window("main")
+        .ok_or_else(|| "janela main não encontrada".to_string())?;
+    // Solta caps primeiro pra setSize não ser clampado.
+    let _ = win.set_min_size(Some(LogicalSize::new(80.0, 100.0)));
+    let _ = win.set_max_size::<LogicalSize<f64>>(None);
+    // set_size faz o lado de "outer" — set_inner_size é só conteúdo (sem frame).
+    // No nosso caso (decorations: false), inner ≈ outer mas inner ignora as
+    // restrições internas do Windows pra outer mínimo.
+    win.set_size(LogicalSize::new(width, height))
+        .map_err(|e| e.to_string())?;
+    win.set_position(LogicalPosition::new(x as f64, y as f64))
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 // ───────────────── Global Shortcut (Pro, opt-in) ─────────────────
 
 /// Registra um atalho global. Combo no formato Tauri: "Ctrl+Shift+N".
@@ -489,6 +519,7 @@ pub fn run() {
             set_always_on_top,
             show_main_window,
             hide_main_window,
+            set_window_bounds,
             // Global shortcut (opt-in)
             register_show_shortcut,
             unregister_show_shortcut,

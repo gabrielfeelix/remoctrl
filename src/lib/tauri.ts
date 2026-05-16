@@ -72,6 +72,12 @@ export async function unregisterShowShortcut() {
   return invoke<void>("unregister_show_shortcut");
 }
 
+/** Aplica tamanho + posição atomicamente via Rust. Bypassa o bug do
+ * Windows com setSize quando decorations:false. Tamanhos em LOGICAL px. */
+export async function setWindowBounds(width: number, height: number, x: number, y: number) {
+  return invoke<void>("set_window_bounds", { width, height, x, y });
+}
+
 /** Detecta se estamos dentro do shell Tauri (vs. browser puro do `npm run dev`). */
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;

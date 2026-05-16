@@ -66,14 +66,16 @@ export function TvChips() {
         );
       })}
 
+      {/* +TV — área clicável MAIOR (px-4 py-2 vs px-3 py-1.5 dos outros chips)
+          pra reduzir miss-clicks que caem na drag-region da TitleBar acima. */}
       <button
         type="button"
-        onClick={openAddTv}
-        className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold border border-dashed transition-colors shrink-0
+        onClick={(e) => { e.stopPropagation(); openAddTv(); }}
+        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold border border-dashed transition-colors shrink-0
                    text-gray-500 border-gray-300 hover:text-primary hover:border-primary hover:bg-primary/5
                    dark:text-white/50 dark:border-white/15 dark:hover:text-white dark:hover:border-primary dark:hover:bg-primary/5"
       >
-        <Plus className="w-3 h-3" />
+        <Plus className="w-3.5 h-3.5" />
         TV
       </button>
     </div>

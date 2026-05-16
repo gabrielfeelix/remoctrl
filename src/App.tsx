@@ -28,6 +28,7 @@ import {
   setAlwaysOnTop as setAotBackend,
   registerShowShortcut,
   unregisterShowShortcut,
+  setWindowBounds,
 } from "@/lib/tauri";
 
 function App() {
@@ -89,45 +90,27 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Redimensiona a janela quando entra/sai do widget mode.
-  // Widget = mini-window no canto superior esquerdo, only the essentials.
-  //
-  // BUG histórico: setSize sozinho era ignorado pelo Windows — a janela
-  // mantinha a altura anterior e o flex-1 esticava o conteúdo. Solução:
-  // PINAR a janela com setMaxSize == setSize. Aí o Windows é obrigado a
-  // respeitar (não há outra hipótese de tamanho).
+  // Redimensiona a janela quando entra/sai do widget mode via Rust command
+  // — JS setSize era IGNORADO no Windows com decorations:false. O comando
+  // Rust faz set_min_size + set_max_size + set_size + set_position atomicamente.
   useEffect(() => {
     if (!isTauri()) return;
     (async () => {
       try {
-        const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
-        const { getCurrentWindow } = await import("@tauri-apps/api/window");
-        const win = getCurrentWindow();
         if (widgetMode) {
-          const W = 160, H = 220;
-          // Ordem importa:
-          //   1. Limpa maxSize (caso tenha ficado de algum estado anterior)
-          //   2. Aperta min DOWN pro tamanho que queremos
-          //   3. setSize pro tamanho exato
-          //   4. PIN com maxSize igual ao size — força Windows a respeitar
-          await win.setMaxSize(null).catch(() => {});
-          await win.setMinSize(new LogicalSize(W, H));
-          await win.setSize(new LogicalSize(W, H));
-          await win.setMaxSize(new LogicalSize(W, H));
-          await win.setAlwaysOnTop(true);
-          await win.setPosition(new LogicalPosition(24, 60));
+          // 160×250 — alvo do print manual do usuário, cabe todos os botões
+          await setWindowBounds(160, 250, 24, 60);
         } else {
-          const W = 480, H = 760;
-          // Volta pro modo normal: libera max, devolve min, set size, posiciona
-          await win.setMaxSize(null).catch(() => {});
-          await win.setMinSize(new LogicalSize(360, 600));
-          await win.setSize(new LogicalSize(W, H));
-          await win.setPosition(new LogicalPosition(24, 60));
+          await setWindowBounds(480, 760, 24, 60);
         }
+        // setAlwaysOnTop é independente do Rust command
+        const { getCurrentWindow } = await import("@tauri-apps/api/window");
+        await getCurrentWindow().setAlwaysOnTop(widgetMode || alwaysOnTop).catch(() => {});
       } catch {
         /* noop */
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widgetMode]);
 
   if (widgetMode) {
@@ -148,8 +131,10 @@ function App() {
         {/* TitleBar custom — drag + controles */}
         <TitleBar />
 
-        {/* Header sticky: chips ficam visíveis mesmo com scroll abaixo */}
-        <div className="sticky top-0 z-10 px-3 pt-2.5 bg-white dark:bg-[#0a0c10]">
+        {/* Header sticky: chips ficam visíveis mesmo com scroll abaixo.
+            pt-4 (16px) cria buffer entre TitleBar drag-region e os chips,
+            evitando miss-click que arrasta a janela em vez de abrir +TV. */}
+        <div className="sticky top-0 z-10 px-3 pt-4 bg-white dark:bg-[#0a0c10]">
           <TvChips />
         </div>
 

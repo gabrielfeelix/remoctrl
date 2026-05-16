@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Power, Volume1, Volume2, Tv2, X, Home, ChevronLeft, Play, Pause,
+  Power, Volume1, Volume2, Tv2, X, Home, ChevronLeft, Play, Pause, Minus,
 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
@@ -109,6 +109,11 @@ export function WidgetRemote() {
 
   const exitWidget = () => setWidgetMode(false);
 
+  const onMinimize = async () => {
+    if (!isTauri()) return;
+    try { await getCurrentWindow().minimize(); } catch { /* noop */ }
+  };
+
   const onClose = async () => {
     if (!isTauri()) return;
     try { await getCurrentWindow().close(); } catch { /* noop */ }
@@ -156,6 +161,13 @@ export function WidgetRemote() {
             className="p-0.5 rounded text-white/50 hover:text-primary hover:bg-white/5"
           >
             <Tv2 className="w-2.5 h-2.5" />
+          </button>
+          <button
+            onClick={onMinimize}
+            title="Minimizar"
+            className="p-0.5 rounded text-white/50 hover:text-white hover:bg-white/5"
+          >
+            <Minus className="w-2.5 h-2.5" />
           </button>
           <button
             onClick={onClose}
