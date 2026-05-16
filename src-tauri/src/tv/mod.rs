@@ -15,8 +15,6 @@ pub mod samsung;
 pub mod lg;
 #[allow(dead_code)]
 pub mod sony;
-#[allow(dead_code)]
-pub mod sony;
 
 /// Identificação de uma TV — usado tanto pra TVs descobertas via SSDP
 /// quanto pras TVs que o usuário já adicionou.
