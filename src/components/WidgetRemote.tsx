@@ -258,10 +258,10 @@ export function WidgetRemote() {
           <button
             onClick={() => dispatch("PlayPause")}
             title="Play / Pause"
-            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("PlayPause")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white flex items-center justify-center gap-0.5 hover:bg-[#3d4350] active:bg-primary ${armed("PlayPause")}`}
           >
             <Play className="w-2.5 h-2.5" fill="currentColor" />
-            <Pause className="w-2.5 h-2.5 -ml-0.5" fill="currentColor" />
+            <Pause className="w-2.5 h-2.5" fill="currentColor" />
           </button>
         </div>
       </main>

@@ -101,7 +101,8 @@ function App() {
           // 160×250 — alvo do print manual do usuário, cabe todos os botões
           await setWindowBounds(160, 250, 24, 60);
         } else {
-          await setWindowBounds(480, 760, 24, 60);
+          // 420×760 — mais estreito (era 480) + y=20 (era 60, ficava muito baixo)
+          await setWindowBounds(420, 760, 24, 20);
         }
         // setAlwaysOnTop é independente do Rust command
         const { getCurrentWindow } = await import("@tauri-apps/api/window");
