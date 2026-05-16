@@ -311,6 +311,53 @@ fn hide_main_window(app: AppHandle) {
     }
 }
 
+// ───────────────── Global Shortcut (Pro, opt-in) ─────────────────
+
+/// Registra um atalho global. Combo no formato Tauri: "Ctrl+Shift+N".
+/// Quando disparado, mostra/foca a janela main. Sobrescreve se já existia
+/// um atalho registrado anteriormente.
+///
+/// SEGURANÇA: o plugin global-shortcut pode falhar em algumas distros
+/// Linux com WMs exóticos ou Windows com a combinação ocupada pelo SO.
+/// Capturamos todos os erros e devolvemos como string — nunca pânico.
+#[tauri::command]
+fn register_show_shortcut(app: AppHandle, combo: String) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::GlobalShortcutExt;
+
+    let manager = app.global_shortcut();
+    // Limpa qualquer registro anterior pra evitar duplicatas
+    let _ = manager.unregister_all();
+    manager
+        .on_shortcut(combo.as_str(), move |app, _shortcut, event| {
+            use tauri_plugin_global_shortcut::ShortcutState;
+            if event.state() != ShortcutState::Pressed {
+                return;
+            }
+            if let Some(w) = app.get_webview_window("main") {
+                let visible = w.is_visible().unwrap_or(false);
+                let minimized = w.is_minimized().unwrap_or(false);
+                if !visible || minimized {
+                    let _ = w.unminimize();
+                    let _ = w.show();
+                    let _ = w.set_focus();
+                } else {
+                    let _ = w.set_focus();
+                }
+                let _ = app.emit("global-shortcut-fired", &combo);
+            }
+        })
+        .map_err(|e| format!("registro falhou ({}): {e}. Combo ocupado pelo SO?", combo))
+}
+
+/// Cancela todos os atalhos globais registrados.
+#[tauri::command]
+fn unregister_show_shortcut(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::GlobalShortcutExt;
+    app.global_shortcut()
+        .unregister_all()
+        .map_err(|e| e.to_string())
+}
+
 // ───────────────────────────── BOOTSTRAP ─────────────────────────────
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -326,7 +373,11 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(tauri_plugin_notification::init());
+        .plugin(tauri_plugin_notification::init())
+        // Plugin de global-shortcut REGISTRADO mas SEM listeners por padrão.
+        // O usuário ativa via UI (Ajustes → Atalhos → Atalho global), aí o
+        // frontend chama `register_show_shortcut`. Em Pro free, fica off.
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
     // Single-instance: causa crash em WSLg/algumas distros Linux por conflito
     // com D-Bus session bus. Desabilitado temporariamente — focar janela
@@ -436,6 +487,9 @@ pub fn run() {
             set_always_on_top,
             show_main_window,
             hide_main_window,
+            // Global shortcut (opt-in)
+            register_show_shortcut,
+            unregister_show_shortcut,
         ])
         .run(tauri::generate_context!())
         .expect("erro ao rodar Remoctrl");

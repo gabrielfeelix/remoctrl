@@ -62,6 +62,16 @@ export async function wakeOnLan(mac: string) {
   return invoke<void>("wake_on_lan", { mac });
 }
 
+/** Registra um atalho global (foco/show da janela). Combo tipo "Ctrl+Shift+N". */
+export async function registerShowShortcut(combo: string) {
+  return invoke<void>("register_show_shortcut", { combo });
+}
+
+/** Cancela TODOS os atalhos globais do app. */
+export async function unregisterShowShortcut() {
+  return invoke<void>("unregister_show_shortcut");
+}
+
 /** Detecta se estamos dentro do shell Tauri (vs. browser puro do `npm run dev`). */
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;

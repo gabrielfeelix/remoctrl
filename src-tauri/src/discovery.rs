@@ -83,6 +83,7 @@ async fn discover_ssdp(timeout_ms: u64) -> Result<Vec<TvDevice>> {
                     brand,
                     host,
                     auth_token: None,
+                    port: None,
                 });
             }
             Err(e) => warn!("ssdp item err: {e}"),
@@ -139,13 +140,13 @@ fn host_from_location(location: &str) -> Option<String> {
     url.host_str().map(|s| s.to_string())
 }
 
-/// mDNS — Android TV anuncia `_androidtvremote2._tcp` (Google TV Remote v2).
-/// Também detectamos `_adb-tls-connect._tcp` (Wireless Debugging) e
-/// `_androidtvremote._tcp` (Remote v1 / legacy) como sinais.
+/// mDNS — Android TV anuncia `_androidtvremote2._tcp` (Google TV Remote v2),
+/// `_androidtvremote._tcp` (Remote v1 / legacy) e `_adb-tls-connect._tcp`
+/// (Wireless Debugging porta dinâmica em Android 11+).
 ///
-/// Capturamos só o IP — a porta ADB é diferente da do Remote v2 e é dinâmica;
-/// usuário ainda precisa setar manualmente no AddTVModal. Mas o IP correto
-/// já reduz pela metade o tempo de adicionar a TV.
+/// O `_adb-tls-connect._tcp` é especial: o port que ele anuncia é EXATAMENTE
+/// a porta dinâmica de ADB. Quando achamos esse serviço, preenchemos
+/// `port` na TvDevice — o usuário não precisa mais digitar manualmente.
 async fn discover_mdns(timeout_ms: u64) -> Result<Vec<TvDevice>> {
     use mdns_sd::{ServiceDaemon, ServiceEvent};
     let mut found: Vec<TvDevice> = Vec::new();
@@ -158,7 +159,8 @@ async fn discover_mdns(timeout_ms: u64) -> Result<Vec<TvDevice>> {
         }
     };
 
-    // Serviços que indicam Android TV / Google TV
+    // Serviços que indicam Android TV / Google TV. ADB-TLS-connect é o único
+    // cuja PORTA importa pra nós (é a porta de wireless debugging).
     const SERVICES: &[&str] = &[
         "_androidtvremote2._tcp.local.",
         "_androidtvremote._tcp.local.",
@@ -190,20 +192,38 @@ async fn discover_mdns(timeout_ms: u64) -> Result<Vec<TvDevice>> {
                         .find(|a| a.is_ipv4())
                         .map(|a| a.to_string());
                     let Some(host) = host else { continue };
-                    if found.iter().any(|d| d.host == host && d.brand == TvBrand::AndroidTv) {
+
+                    let svc_type = info.get_type();
+                    let is_adb = svc_type.starts_with("_adb-tls-connect");
+                    let svc_port = info.get_port();
+
+                    debug!(
+                        "mDNS resolved {} @ {}:{} (svc={svc_type})",
+                        info.get_fullname(),
+                        host,
+                        svc_port
+                    );
+
+                    // Já tem essa TV? Apenas atualiza a porta se descobrimos via ADB.
+                    if let Some(existing) = found
+                        .iter_mut()
+                        .find(|d| d.host == host && d.brand == TvBrand::AndroidTv)
+                    {
+                        if is_adb && existing.port.is_none() {
+                            existing.port = Some(svc_port);
+                        }
                         continue;
                     }
-                    debug!(
-                        "mDNS resolved Android TV: {} @ {}",
-                        info.get_fullname(),
-                        host
-                    );
+
                     found.push(TvDevice {
                         id: format!("{}-{}", brand_str(TvBrand::AndroidTv), host),
                         label: default_label(TvBrand::AndroidTv, &host),
                         brand: TvBrand::AndroidTv,
                         host,
                         auth_token: None,
+                        // Só populamos a porta se for o serviço ADB — caso contrário
+                        // ficaria a porta 6466 do Remote v2, que NÃO é ADB.
+                        port: if is_adb { Some(svc_port) } else { None },
                     });
                 }
             }

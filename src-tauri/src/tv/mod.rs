@@ -31,6 +31,10 @@ pub struct TvDevice {
     /// Token / client_key (Samsung / LG). Roku não usa.
     #[serde(default)]
     pub auth_token: Option<String>,
+    /// Porta (Android TV ADB — dinâmica em Android 11+).
+    /// mDNS descobre via _adb-tls-connect._tcp.
+    #[serde(default)]
+    pub port: Option<u16>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

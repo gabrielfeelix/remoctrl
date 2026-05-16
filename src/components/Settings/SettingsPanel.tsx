@@ -1,9 +1,10 @@
 // Painel de Configurações — agrupa Aparência, Mídia, Plano, Atalhos, Ajuda, Sobre.
 // Todas as superfícies têm variantes light + dark (WCAG AA em ambas).
 
-import { Sun, Moon, Sparkles, ExternalLink, RotateCcw } from "lucide-react";
+import { Sun, Moon, Sparkles, ExternalLink, RotateCcw, Keyboard } from "lucide-react";
 import { useUiStore } from "@/stores/uiStore";
 import { useLicenseStore, useIsPro } from "@/stores/licenseStore";
+import { useToast } from "@/components/Toast";
 import { CustomShortcuts } from "./CustomShortcuts";
 import { SleepTimerCard } from "./SleepTimerCard";
 
@@ -18,9 +19,27 @@ const TEXT_TITLE = "text-sm font-semibold text-gray-900 dark:text-white";
 const TEXT_HINT = "text-[11px] text-gray-500 dark:text-white/55 leading-snug";
 
 export function SettingsPanel() {
-  const { theme, toggleTheme, openUpgrade, openTutorial } = useUiStore();
+  const {
+    theme,
+    toggleTheme,
+    openUpgrade,
+    openTutorial,
+    globalShortcutEnabled,
+    setGlobalShortcutEnabled,
+  } = useUiStore();
   const isPro = useIsPro();
   const license = useLicenseStore();
+  const showToast = useToast((s) => s.show);
+
+  const toggleGlobalShortcut = () => {
+    const next = !globalShortcutEnabled;
+    setGlobalShortcutEnabled(next);
+    if (next) {
+      showToast("Ctrl+Shift+N ativo — foca o Remoctrl de qualquer lugar");
+    } else {
+      showToast("Atalho global desligado");
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -106,6 +125,40 @@ export function SettingsPanel() {
       {/* Atalhos */}
       <section>
         <h3 className={SECTION_HEADER}>Atalhos de teclado</h3>
+
+        {/* Atalho global do SO — opt-in, default OFF.
+            Pro: ativa Ctrl+Shift+N pra trazer o Remoctrl pra frente
+            de qualquer lugar do desktop. */}
+        <div className={`${CARD_BASE} flex items-center justify-between mb-2`}>
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <Keyboard className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <div className={TEXT_TITLE}>Atalho global do SO</div>
+              <div className={TEXT_HINT}>
+                <kbd className="px-1 rounded border bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/10 font-mono text-[10px]">Ctrl</kbd>
+                {" + "}
+                <kbd className="px-1 rounded border bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/10 font-mono text-[10px]">Shift</kbd>
+                {" + "}
+                <kbd className="px-1 rounded border bg-gray-100 border-gray-200 dark:bg-white/5 dark:border-white/10 font-mono text-[10px]">N</kbd>
+                {" "}foca o app em qualquer tela. Só ativa enquanto ligado aqui.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={toggleGlobalShortcut}
+            disabled={!isPro}
+            title={isPro ? "" : "Pro: ative pra usar atalhos globais"}
+            className={`relative w-10 h-5 rounded-full transition-colors shrink-0
+              ${globalShortcutEnabled ? "bg-primary" : "bg-gray-300 dark:bg-white/15"}
+              ${!isPro ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform
+                ${globalShortcutEnabled ? "translate-x-5" : ""}`}
+            />
+          </button>
+        </div>
+
         <CustomShortcuts />
       </section>
 

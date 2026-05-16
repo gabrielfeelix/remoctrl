@@ -23,16 +23,39 @@ import { useTvStore } from "@/stores/tvStore";
 import { useLicenseStore } from "@/stores/licenseStore";
 import { useTheme } from "@/hooks/useTheme";
 import { useCustomShortcuts } from "@/hooks/useCustomShortcuts";
-import { isTauri, setAlwaysOnTop as setAotBackend } from "@/lib/tauri";
+import {
+  isTauri,
+  setAlwaysOnTop as setAotBackend,
+  registerShowShortcut,
+  unregisterShowShortcut,
+} from "@/lib/tauri";
 
 function App() {
-  const { tab, onboardingDone, openTutorial, openAddTv, alwaysOnTop, setAlwaysOnTop, widgetMode } =
+  const { tab, onboardingDone, openTutorial, openAddTv, alwaysOnTop, setAlwaysOnTop, widgetMode, globalShortcutEnabled } =
     useUiStore();
   const savedCount = useTvStore((s) => s.saved.length);
   const ensureLicensed = useLicenseStore((s) => s.ensureActivated);
 
   useTheme();
   useCustomShortcuts();
+
+  // Atalho global Ctrl+Shift+N — registra SÓ se o usuário ativou em Ajustes.
+  // Reage a mudanças do toggle (on/off) e ao boot (rehidrata da localStorage).
+  useEffect(() => {
+    if (!isTauri()) return;
+    (async () => {
+      try {
+        if (globalShortcutEnabled) {
+          await registerShowShortcut("CommandOrControl+Shift+N");
+        } else {
+          await unregisterShowShortcut();
+        }
+      } catch {
+        /* silencioso — combo ocupado pelo SO ou WM exótico; UI mostra erro
+           se vier do toggle direto via try/catch no SettingsPanel */
+      }
+    })();
+  }, [globalShortcutEnabled]);
 
   useEffect(() => {
     // Build interno: garante Pro ativo já no boot.

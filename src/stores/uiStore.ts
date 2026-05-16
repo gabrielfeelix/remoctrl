@@ -22,6 +22,8 @@ interface UiState {
   editTvId: string | null;
   /** Modo widget (janela pequena flutuante só com essenciais). */
   widgetMode: boolean;
+  /** Atalho global Ctrl+Shift+N (Pro). Opt-in: usuário liga no Ajustes. */
+  globalShortcutEnabled: boolean;
 
   setTab: (t: Tab) => void;
   setTheme: (t: Theme) => void;
@@ -38,6 +40,7 @@ interface UiState {
   openEditTv: (id: string) => void;
   closeEditTv: () => void;
   setWidgetMode: (v: boolean) => void;
+  setGlobalShortcutEnabled: (v: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -52,6 +55,7 @@ export const useUiStore = create<UiState>()(
       upgradeOpen: false,
       editTvId: null,
       widgetMode: false,
+      globalShortcutEnabled: false,
 
       setTab: (t) => set({ tab: t }),
       setTheme: (t) => set({ theme: t }),
@@ -69,6 +73,7 @@ export const useUiStore = create<UiState>()(
       openEditTv: (id) => set({ editTvId: id }),
       closeEditTv: () => set({ editTvId: null }),
       setWidgetMode: (v) => set({ widgetMode: v }),
+      setGlobalShortcutEnabled: (v) => set({ globalShortcutEnabled: v }),
     }),
     {
       name: "remoctrl.ui",
@@ -79,6 +84,7 @@ export const useUiStore = create<UiState>()(
         alwaysOnTop: s.alwaysOnTop,
         onboardingDone: s.onboardingDone,
         widgetMode: s.widgetMode,
+        globalShortcutEnabled: s.globalShortcutEnabled,
       }),
     },
   ),
