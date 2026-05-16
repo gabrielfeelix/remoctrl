@@ -279,10 +279,12 @@ async fn philips_is_reachable(host: String) -> bool {
 
 // ───────────────── Wake-on-LAN ─────────────────
 
-/// Liga uma TV (LG/Samsung com WoL ativado) via magic packet.
+/// Liga uma TV (Roku/Samsung/LG/Sony com "network standby" ativado) via
+/// magic packet. `host` é o IP da TV — quando informado, manda também pro
+/// broadcast direcionado da subnet (muito mais confiável em Wi-Fi).
 #[tauri::command]
-fn wake_on_lan(mac: String) -> Result<(), String> {
-    wol::wake(&mac).map_err(|e| e.to_string())
+fn wake_on_lan(mac: String, host: Option<String>) -> Result<(), String> {
+    wol::wake(&mac, host.as_deref()).map_err(|e| e.to_string())
 }
 
 /// Define o estado "always on top". Frontend mantém o valor desejado (no store).

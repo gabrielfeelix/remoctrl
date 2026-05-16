@@ -93,10 +93,11 @@ export function RemoteShell() {
           /* cai pra WoL */
         }
       }
-      // 2. WoL com magic packet (precisa de MAC)
+      // 2. WoL com magic packet (precisa de MAC). Passa host pra mandar
+      //    pro broadcast direcionado da subnet (mais confiável em Wi-Fi).
       if (tv.mac) {
         try {
-          await wakeOnLan(tv.mac);
+          await wakeOnLan(tv.mac, tv.host);
           showToast(`Ligando ${tv.label}… (Wake-on-LAN)`);
           return;
         } catch (e) {
@@ -125,7 +126,7 @@ export function RemoteShell() {
       }
       if (tv.mac && isTauri()) {
         try {
-          await wakeOnLan(tv.mac);
+          await wakeOnLan(tv.mac, tv.host);
           showToast(`Ligando ${tv.label}… (Wake-on-LAN)`);
           return;
         } catch { /* segue */ }

@@ -64,7 +64,7 @@ export function WidgetRemote() {
       }
       if (tv.mac) {
         try {
-          await wakeOnLan(tv.mac);
+          await wakeOnLan(tv.mac, tv.host);
           showToast(`Ligando ${tv.label}… (WoL)`);
           return;
         } catch (e) {
@@ -87,7 +87,7 @@ export function WidgetRemote() {
       }
       if (tv.mac && isTauri()) {
         try {
-          await wakeOnLan(tv.mac);
+          await wakeOnLan(tv.mac, tv.host);
           showToast(`Ligando ${tv.label}…`);
           return;
         } catch { /* noop */ }

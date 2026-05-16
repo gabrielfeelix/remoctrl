@@ -57,9 +57,12 @@ export async function setAlwaysOnTop(value: boolean) {
   return invoke<void>("set_always_on_top", { value });
 }
 
-/** Manda magic packet pra ligar a TV (Wake-on-LAN). Requer MAC salvo. */
-export async function wakeOnLan(mac: string) {
-  return invoke<void>("wake_on_lan", { mac });
+/** Manda magic packet pra ligar a TV (Wake-on-LAN). Requer MAC salvo.
+ *  Passe também o `host` (IP da TV) — o backend usa pra mandar pro broadcast
+ *  direcionado da subnet, que funciona em redes onde o limitado (255.255.255.255)
+ *  é descartado pelo roteador / AP Wi-Fi. */
+export async function wakeOnLan(mac: string, host?: string) {
+  return invoke<void>("wake_on_lan", { mac, host });
 }
 
 /** Registra um atalho global (foco/show da janela). Combo tipo "Ctrl+Shift+N". */

@@ -12,6 +12,14 @@ import { useTvStore } from "@/stores/tvStore";
 import { useToast } from "@/components/Toast";
 import type { TvBrand } from "@/types";
 
+/** Auto-formata enquanto o usuário digita: aceita qualquer separador (ou
+ *  nenhum), filtra pra hex, força UPPERCASE e injeta `:` a cada 2 chars.
+ *  Cap em 17 chars (12 hex + 5 colons). */
+function formatMac(raw: string): string {
+  const hex = raw.replace(/[^0-9a-fA-F]/g, "").toUpperCase().slice(0, 12);
+  return hex.match(/.{1,2}/g)?.join(":") ?? "";
+}
+
 const BRAND_LABEL: Record<TvBrand, string> = {
   roku: "Roku",
   samsung: "Samsung",
@@ -37,18 +45,18 @@ const GUIDES: Partial<Record<TvBrand, BrandGuide>> = {
   roku: {
     reliable: "medium",
     reliabilityNote:
-      "Roku TV: WoL é instável. O Remoctrl prioriza um wake via ECP (mais confiável) e cai pra WoL se falhar.",
+      "⚠️ Roku TV SÓ acorda do desligado se 'Início Rápido da TV' estiver ON. Sem isso a TV fica 100% morta na rede e NENHUM método liga (nem MAC, nem ECP). Ative ANTES de testar.",
     macSteps: [
       "No controle, aperte Home e abra Configurações",
       "Sistema → Sobre",
       "Role até o fim e clique em 'Detalhes' (More info)",
       "Procure 'Endereço Wi-Fi' (ou Ethernet, se for cabo)",
     ],
-    wolName: "Início Rápido da TV",
+    wolName: "Início Rápido da TV (PASSO OBRIGATÓRIO)",
     wolSteps: [
-      "Configurações → Sistema → Energia",
-      "Ative 'Início Rápido da TV' (mantém o ECP vivo — chave pro Power-On)",
-      "(opcional) Procure 'Standby de rede' / 'Network standby' se existir",
+      "Configurações → Sistema → Energia → Início Rápido da TV = ON",
+      "Em inglês: System → Power → Fast TV Start = ON",
+      "Sem isso a TV desliga a Wi-Fi quando dorme — nada acorda",
     ],
   },
   samsung: {
@@ -140,7 +148,7 @@ export function EditTvModal() {
   useEffect(() => {
     if (!tv) return;
     setLabel(tv.label);
-    setMac(tv.mac ?? "");
+    setMac(formatMac(tv.mac ?? ""));
     setPsk(tv.brand === "sony" ? tv.auth_token ?? "" : "");
     setPort(tv.brand === "androidtv" ? String(tv.port ?? "") : "");
     setShowGuide(false);
@@ -247,8 +255,11 @@ export function EditTvModal() {
             <input
               type="text"
               value={mac}
-              onChange={(e) => setMac(e.target.value)}
+              onChange={(e) => setMac(formatMac(e.target.value))}
               placeholder="AA:BB:CC:DD:EE:FF"
+              maxLength={17}
+              autoComplete="off"
+              spellCheck={false}
               className="w-full mt-1 text-[12px] font-mono rounded-lg border px-3 py-2 outline-none transition-colors
                          bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
                          dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"

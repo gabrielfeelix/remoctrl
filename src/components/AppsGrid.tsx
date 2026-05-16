@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useTvStore } from "@/stores/tvStore";
+import { useUiStore } from "@/stores/uiStore";
 import { useRecentsStore } from "@/stores/recentsStore";
 import { useToast } from "@/components/Toast";
 import { isTauri } from "@/lib/tauri";
@@ -29,6 +30,7 @@ const BRAND_HOME_HINT: Record<string, string> = {
 
 export function AppsGrid() {
   const tv = useTvStore((s) => s.selected());
+  const setTab = useUiStore((s) => s.setTab);
   const showToast = useToast((s) => s.show);
   const pushRecent = useRecentsStore((s) => s.push);
   const recents = useRecentsStore((s) => s.items);
@@ -138,6 +140,10 @@ export function AppsGrid() {
         lastOpenedAt: Date.now(),
       });
       showToast(`Abrindo ${app.name}`);
+      // Volta pro controle — usuário acabou de abrir o app, agora quer
+      // navegar dentro dele (DPad, OK, voltar). Sem isso teria que clicar
+      // na aba Remote manualmente toda vez.
+      setTab("remote");
     } catch (e) {
       // Tauri rejeita comandos com `String` direto (não `Error`).
       // Cobrimos os 2 casos pra mostrar a mensagem real, não "Falhou" genérico.
