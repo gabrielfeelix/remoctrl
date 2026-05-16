@@ -93,7 +93,18 @@ export function RemoteShell() {
           /* cai pra o erro original abaixo */
         }
       }
-      showToast(e instanceof Error ? e.message : "Power falhou", "err");
+      // Sem MAC + TV offline = mensagem útil em vez do erro técnico cru
+      const offline =
+        e instanceof Error &&
+        (e.message.includes("falhou") || e.message.includes("connection") || e.message.includes("respondeu"));
+      if (offline && !tv.mac) {
+        showToast(
+          "TV offline. Pra ligar de volta, adicione o MAC da TV em 'Editar' (necessário pro Wake-on-LAN).",
+          "err",
+        );
+      } else {
+        showToast(e instanceof Error ? e.message : "Power falhou", "err");
+      }
     }
   };
 

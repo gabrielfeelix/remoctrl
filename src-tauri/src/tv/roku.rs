@@ -133,13 +133,17 @@ pub async fn launch_app(
     Ok(())
 }
 
-/// Abre a tela de busca da Roku já com `query` preenchida.
+/// Abre a tela de busca universal da Roku com `query` preenchida.
+/// `launch=true` faz a Roku auto-abrir o melhor resultado quando há match
+/// exato (Netflix, Crunchyroll, Globoplay, Prime, etc. todos indexam aqui).
+/// Quando não há match perfeito, a tela de resultados fica aberta.
 pub async fn search(host: &str, query: &str) -> Result<()> {
     let mut url =
         url::Url::parse(&format!("{}/search/browse", base(host))).context("URL inválida")?;
     url.query_pairs_mut()
         .append_pair("keyword", query)
-        .append_pair("match-any", "true");
+        .append_pair("match-any", "true")
+        .append_pair("launch", "true");
     let res = http().post(url.as_str()).send().await?;
     if !res.status().is_success() {
         return Err(anyhow!("search respondeu {}", res.status()));

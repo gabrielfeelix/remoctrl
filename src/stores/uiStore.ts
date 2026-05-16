@@ -18,6 +18,10 @@ interface UiState {
   tutorialOpen: boolean;
   /** Modal de upgrade pra Pro aberto? */
   upgradeOpen: boolean;
+  /** ID da TV sendo editada (null = modal fechado). */
+  editTvId: string | null;
+  /** Modo widget (janela pequena flutuante só com essenciais). */
+  widgetMode: boolean;
 
   setTab: (t: Tab) => void;
   setTheme: (t: Theme) => void;
@@ -31,6 +35,9 @@ interface UiState {
   closeTutorial: () => void;
   openUpgrade: () => void;
   closeUpgrade: () => void;
+  openEditTv: (id: string) => void;
+  closeEditTv: () => void;
+  setWidgetMode: (v: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -43,6 +50,8 @@ export const useUiStore = create<UiState>()(
       addTvModalOpen: false,
       tutorialOpen: false,
       upgradeOpen: false,
+      editTvId: null,
+      widgetMode: false,
 
       setTab: (t) => set({ tab: t }),
       setTheme: (t) => set({ theme: t }),
@@ -57,6 +66,9 @@ export const useUiStore = create<UiState>()(
       closeTutorial: () => set({ tutorialOpen: false }),
       openUpgrade: () => set({ upgradeOpen: true }),
       closeUpgrade: () => set({ upgradeOpen: false }),
+      openEditTv: (id) => set({ editTvId: id }),
+      closeEditTv: () => set({ editTvId: null }),
+      setWidgetMode: (v) => set({ widgetMode: v }),
     }),
     {
       name: "remoctrl.ui",
@@ -66,6 +78,7 @@ export const useUiStore = create<UiState>()(
         theme: s.theme,
         alwaysOnTop: s.alwaysOnTop,
         onboardingDone: s.onboardingDone,
+        widgetMode: s.widgetMode,
       }),
     },
   ),

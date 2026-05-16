@@ -8,7 +8,7 @@
 // `pointer-events-none` foi REMOVIDO dos elementos internos — estava bloqueando
 // o handler de mousedown pros eventos não chegarem ao header.
 
-import { Pin, PinOff, HelpCircle, Minus, X, Maximize2, Minimize2 } from "lucide-react";
+import { Pin, PinOff, HelpCircle, Minus, X, Maximize2, Minimize2, PictureInPicture2 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useState } from "react";
 import { useUiStore } from "@/stores/uiStore";
@@ -17,7 +17,7 @@ import { setAlwaysOnTop, isTauri } from "@/lib/tauri";
 import { Logo } from "./Logo";
 
 export function TitleBar() {
-  const { alwaysOnTop, setAlwaysOnTop: setAotInStore, openTutorial } = useUiStore();
+  const { alwaysOnTop, setAlwaysOnTop: setAotInStore, openTutorial, setWidgetMode } = useUiStore();
   const showToast = useToast((s) => s.show);
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -157,6 +157,14 @@ export function TitleBar() {
         className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
       >
         <HelpCircle className="w-3.5 h-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => setWidgetMode(true)}
+        title="Modo Widget — janelinha flutuante com setas + power + vol"
+        className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
+      >
+        <PictureInPicture2 className="w-3.5 h-3.5" />
       </button>
       <button
         type="button"

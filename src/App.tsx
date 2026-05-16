@@ -11,11 +11,13 @@ import { MacroList } from "@/components/Macros/MacroList";
 import { SettingsPanel } from "@/components/Settings/SettingsPanel";
 import { TabBar } from "@/components/TabBar";
 import { AddTVModal } from "@/components/TVList/AddTVModal";
+import { EditTvModal } from "@/components/TVList/EditTvModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { Onboarding } from "@/components/Onboarding/Onboarding";
 import { ToastViewport } from "@/components/Toast";
 import { SleepTimerRunner } from "@/components/SleepTimerRunner";
 import { BackgroundDiscovery } from "@/components/BackgroundDiscovery";
+import { WidgetRemote } from "@/components/WidgetRemote";
 import { useUiStore } from "@/stores/uiStore";
 import { useTvStore } from "@/stores/tvStore";
 import { useLicenseStore } from "@/stores/licenseStore";
@@ -24,7 +26,7 @@ import { useCustomShortcuts } from "@/hooks/useCustomShortcuts";
 import { isTauri, setAlwaysOnTop as setAotBackend } from "@/lib/tauri";
 
 function App() {
-  const { tab, onboardingDone, openTutorial, openAddTv, alwaysOnTop, setAlwaysOnTop } =
+  const { tab, onboardingDone, openTutorial, openAddTv, alwaysOnTop, setAlwaysOnTop, widgetMode } =
     useUiStore();
   const savedCount = useTvStore((s) => s.saved.length);
   const ensureLicensed = useLicenseStore((s) => s.ensureActivated);
@@ -47,6 +49,30 @@ function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Redimensiona a janela quando entra/sai do widget mode.
+  useEffect(() => {
+    if (!isTauri()) return;
+    (async () => {
+      try {
+        const { LogicalSize } = await import("@tauri-apps/api/dpi");
+        const { getCurrentWindow } = await import("@tauri-apps/api/window");
+        const win = getCurrentWindow();
+        if (widgetMode) {
+          await win.setSize(new LogicalSize(220, 340));
+          await win.setAlwaysOnTop(true);
+        } else {
+          await win.setSize(new LogicalSize(480, 760));
+        }
+      } catch {
+        /* noop */
+      }
+    })();
+  }, [widgetMode]);
+
+  if (widgetMode) {
+    return <WidgetRemote />;
+  }
 
   return (
     // Wrapper full-screen transparente — necessário pra cantos arredondados
@@ -93,6 +119,7 @@ function App() {
         <TabBar />
 
         <AddTVModal />
+        <EditTvModal />
         <Onboarding />
         <UpgradeModal />
         <ToastViewport />

@@ -48,8 +48,12 @@ export function InlineTypeBar() {
       e.preventDefault();
       try {
         if (supportsSearch) {
+          // Roku busca UNIVERSAL com launch=true — abre o melhor resultado
+          // automaticamente (Netflix, Crunchyroll, Globoplay, Disney+ etc.
+          // todos indexam na busca da Roku). Quando o nome não bate exato,
+          // a tela de resultados abre pro usuário escolher.
           await openSearch(tv, text);
-          showToast(`Buscando "${text}"`);
+          showToast(`Buscando "${text}" na Roku — abre o resultado direto`);
         } else {
           await sendText(tv, text);
         }

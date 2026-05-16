@@ -23,7 +23,8 @@
         "decorations": false,
         "transparent": false,
         "alwaysOnTop": true,
-        "center": true,
+        "x": 24,
+        "y": 60,
         "fullscreen": false,
         "shadow": true
       }

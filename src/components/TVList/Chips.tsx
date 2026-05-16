@@ -1,7 +1,7 @@
 // Chips de TVs — barra horizontal com dot de status inline (sem barra separada).
 // Click = seleciona TV. X no hover remove. "+ TV" abre modal.
 
-import { Plus, X } from "lucide-react";
+import { Plus, X, Pencil } from "lucide-react";
 import { useTvStore } from "@/stores/tvStore";
 import { useUiStore } from "@/stores/uiStore";
 import { useReachability } from "@/hooks/useReachability";
@@ -10,6 +10,7 @@ export function TvChips() {
   const { saved, selectedId, selectTv, removeTv } = useTvStore();
   const selectedTv = useTvStore((s) => s.selected());
   const openAddTv = useUiStore((s) => s.openAddTv);
+  const openEditTv = useUiStore((s) => s.openEditTv);
   const status = useReachability(selectedTv);
 
   const dotColor =
@@ -39,6 +40,17 @@ export function TvChips() {
               />
             )}
             <span>{tv.label}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openEditTv(tv.id);
+              }}
+              className="opacity-0 group-hover:opacity-70 hover:!opacity-100 hover:text-primary transition-opacity p-0 leading-none"
+              title="Editar TV (MAC, apelido, etc.)"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
             <button
               type="button"
               onClick={(e) => {

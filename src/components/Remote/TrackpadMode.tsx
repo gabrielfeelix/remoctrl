@@ -10,13 +10,19 @@ import { useTvStore } from "@/stores/tvStore";
 import { useToast } from "@/components/Toast";
 import { sendCommand } from "@/lib/commands";
 
-const GRID_PX = 40; // sensibilidade — menor = mais sensível
+// Sensibilidade: precisa percorrer GRID_PX pra disparar 1 comando, E esperar
+// COOLDOWN ms antes do próximo. Sem cooldown, segurar o mouse parado
+// disparava dezenas de comandos por segundo. Com 280ms entre disparos,
+// chega a ~3.5 comandos/s no máximo — confortável de usar.
+const GRID_PX = 60;
+const COOLDOWN_MS = 280;
 
 export function TrackpadMode({ onExit }: { onExit?: () => void }) {
   const tv = useTvStore((s) => s.selected());
   const showToast = useToast((s) => s.show);
   const anchor = useRef<{ x: number; y: number } | null>(null);
   const moved = useRef(false);
+  const lastFire = useRef(0);
   const [active, setActive] = useState(false);
 
   const fire = async (cmd: "Up" | "Down" | "Left" | "Right" | "Ok") => {
@@ -36,11 +42,17 @@ export function TrackpadMode({ onExit }: { onExit?: () => void }) {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     anchor.current = { x: e.clientX, y: e.clientY };
     moved.current = false;
+    lastFire.current = 0;
     setActive(true);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!anchor.current) return;
+
+    // Throttle: ignora moves muito próximos no tempo
+    const now = performance.now();
+    if (now - lastFire.current < COOLDOWN_MS) return;
+
     const dx = e.clientX - anchor.current.x;
     const dy = e.clientY - anchor.current.y;
     const absX = Math.abs(dx);
@@ -48,14 +60,16 @@ export function TrackpadMode({ onExit }: { onExit?: () => void }) {
     if (Math.max(absX, absY) < GRID_PX) return;
 
     moved.current = true;
-    // Direção dominante: H ou V
+    lastFire.current = now;
+
+    // Direção dominante: H ou V. Reseta o anchor pra exigir nova distância
+    // completa antes de outro disparo (combina com o cooldown).
     if (absX > absY) {
       fire(dx > 0 ? "Right" : "Left");
-      anchor.current = { x: e.clientX, y: anchor.current.y };
     } else {
       fire(dy > 0 ? "Down" : "Up");
-      anchor.current = { x: anchor.current.x, y: e.clientY };
     }
+    anchor.current = { x: e.clientX, y: e.clientY };
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
