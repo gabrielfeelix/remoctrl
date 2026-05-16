@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTvStore } from "@/stores/tvStore";
+import { useUiStore } from "@/stores/uiStore";
 import { useToast } from "@/components/Toast";
 import { useKeyboard } from "@/hooks/useKeyboard";
 import { useLongPress } from "@/hooks/useLongPress";
@@ -30,6 +31,7 @@ import { Gamepad2, Hand } from "lucide-react";
 
 export function RemoteShell() {
   const tv = useTvStore((s) => s.selected());
+  const openEditTv = useUiStore((s) => s.openEditTv);
   const showToast = useToast((s) => s.show);
   const [flashKey, setFlashKey] = useState<RokuKey | null>(null);
   const status = useReachability(tv);
@@ -93,15 +95,14 @@ export function RemoteShell() {
           /* cai pra o erro original abaixo */
         }
       }
-      // Sem MAC + TV offline = mensagem útil em vez do erro técnico cru
+      // Sem MAC + TV offline = abre o EditTvModal direto, com toast curto.
+      // UX: usuário clica Power → 1 clique pro fix, em vez de 3 (toast → chip → pencil → modal).
       const offline =
         e instanceof Error &&
         (e.message.includes("falhou") || e.message.includes("connection") || e.message.includes("respondeu"));
       if (offline && !tv.mac) {
-        showToast(
-          "TV offline. Pra ligar de volta, adicione o MAC da TV em 'Editar' (necessário pro Wake-on-LAN).",
-          "err",
-        );
+        showToast("TV offline — configure o MAC pra conseguir ligar de volta");
+        openEditTv(tv.id);
       } else {
         showToast(e instanceof Error ? e.message : "Power falhou", "err");
       }

@@ -69,22 +69,50 @@ function App() {
     if (isTauri()) {
       setAotBackend(alwaysOnTop).catch(() => {});
       if (!alwaysOnTop) setAlwaysOnTop(true); // default = on
+
+      // Posiciona à ESQUERDA, vertical center. Roda só uma vez no boot —
+      // se o usuário mover, fica onde ele moveu até a próxima abertura.
+      (async () => {
+        try {
+          const { PhysicalPosition } = await import("@tauri-apps/api/dpi");
+          const { getCurrentWindow, currentMonitor } = await import("@tauri-apps/api/window");
+          const win = getCurrentWindow();
+          const monitor = await currentMonitor();
+          if (!monitor) return;
+          const winSize = await win.outerSize();
+          // 32px da borda esquerda; vertical centralizado (com margem mínima
+          // pra não colar no topo nem na taskbar).
+          const x = 32;
+          const idealY = Math.round((monitor.size.height - winSize.height) / 2);
+          const y = Math.max(48, Math.min(idealY, monitor.size.height - winSize.height - 80));
+          await win.setPosition(new PhysicalPosition(x, y));
+        } catch {
+          /* noop — sem janela pra reposicionar (modo browser ou erro) */
+        }
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Redimensiona a janela quando entra/sai do widget mode.
+  // Widget = mini-window no canto superior esquerdo, only the essentials.
   useEffect(() => {
     if (!isTauri()) return;
     (async () => {
       try {
-        const { LogicalSize } = await import("@tauri-apps/api/dpi");
+        const { LogicalSize, PhysicalPosition } = await import("@tauri-apps/api/dpi");
         const { getCurrentWindow } = await import("@tauri-apps/api/window");
         const win = getCurrentWindow();
         if (widgetMode) {
-          await win.setSize(new LogicalSize(220, 340));
+          // Permite encolher abaixo do minSize do modo normal.
+          await win.setMinSize(new LogicalSize(180, 240));
+          await win.setSize(new LogicalSize(190, 260));
           await win.setAlwaysOnTop(true);
+          // Top-left, com pequena margem pra não colar na borda.
+          await win.setPosition(new PhysicalPosition(20, 20));
         } else {
+          // Devolve o minSize normal — sem isso o setSize abaixo é clampado.
+          await win.setMinSize(new LogicalSize(360, 600));
           await win.setSize(new LogicalSize(480, 760));
         }
       } catch {

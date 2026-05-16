@@ -1,10 +1,10 @@
 // WidgetRemote — modo "pocket" da janela.
-// Layout MUITO minimalista pra caber numa janela pequena (~220x340):
-//   - top: brand + sair-do-widget + fechar
-//   - D-pad compacto (140x140)
-//   - vol-/vol+ + mute + power
-//
-// Janela é redimensionada em main.tsx via Tauri ao entrar/sair do modo.
+// Janela ~190x260, posicionada no canto superior esquerdo via App.tsx.
+// Layout MÍNIMO — só o essencial:
+//   - top: 22px (brand + sair + fechar)
+//   - D-pad compacto 130×130
+//   - bottom: 28px com Vol−/Mute/Vol+/Power
+// Tudo cabe sem scroll mesmo com chrome do SO.
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -120,15 +120,15 @@ export function WidgetRemote() {
                    border border-[#2a2f37]
                    shadow-[0_24px_64px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)]"
       >
-        {/* Top: drag area + sair widget + fechar */}
+        {/* Top: drag + sair widget + fechar — 22px de altura */}
         <header
           data-tauri-drag-region
           onMouseDown={onMouseDownDrag}
-          className="flex items-center gap-1.5 h-7 px-2 border-b border-white/[0.04]"
+          className="flex items-center gap-1 h-[22px] px-1.5 border-b border-white/[0.04]"
           style={{ cursor: "grab" }}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-          <span data-tauri-drag-region className="text-[10px] font-bold text-white/80 truncate flex-1 min-w-0">
+          <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
+          <span data-tauri-drag-region className="text-[9px] font-bold text-white/80 truncate flex-1 min-w-0">
             {tv?.label ?? "Sem TV"}
           </span>
           <button
@@ -136,82 +136,82 @@ export function WidgetRemote() {
             title="Voltar pro modo normal (Esc)"
             className="p-0.5 rounded text-white/50 hover:text-white hover:bg-white/5"
           >
-            <Maximize2 className="w-3 h-3" />
+            <Maximize2 className="w-2.5 h-2.5" />
           </button>
           <button
             onClick={onClose}
             title="Fechar"
             className="p-0.5 rounded text-white/50 hover:text-white hover:bg-red-500/20 hover:!text-red-400"
           >
-            <X className="w-3 h-3" />
+            <X className="w-2.5 h-2.5" />
           </button>
         </header>
 
-        {/* DPad compacto (140x140), centralizado */}
-        <div className="flex-1 flex items-center justify-center p-3">
-          <div className="relative w-[160px] h-[160px]">
+        {/* DPad compacto 130x130, centralizado */}
+        <div className="flex-1 flex items-center justify-center p-1.5">
+          <div className="relative w-[130px] h-[130px]">
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Up")}
               aria-label="Cima"
-              className={`absolute top-0 left-[55px] w-12 h-12 rounded-t-[28px] rounded-b-[10px] bg-[#2a2f37] border border-white/5 text-white text-lg flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Up")}`}
+              className={`absolute top-0 left-[44px] w-10 h-10 rounded-t-[22px] rounded-b-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Up")}`}
             >▲</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Left")}
               aria-label="Esquerda"
-              className={`absolute top-[55px] left-0 w-12 h-12 rounded-l-[28px] rounded-r-[10px] bg-[#2a2f37] border border-white/5 text-white text-lg flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Left")}`}
+              className={`absolute top-[45px] left-0 w-10 h-10 rounded-l-[22px] rounded-r-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Left")}`}
             >◀</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Ok")}
               aria-label="OK"
-              className={`absolute top-[51px] left-[51px] w-[58px] h-[58px] rounded-full text-white font-extrabold text-sm bg-gradient-to-br from-sky-400 to-primary shadow-[0_4px_14px_rgba(14,165,233,0.5)] hover:brightness-110 ${armed("Ok")}`}
+              className={`absolute top-[41px] left-[41px] w-[48px] h-[48px] rounded-full text-white font-extrabold text-[12px] bg-gradient-to-br from-sky-400 to-primary shadow-[0_3px_10px_rgba(14,165,233,0.45)] hover:brightness-110 ${armed("Ok")}`}
             >OK</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Right")}
               aria-label="Direita"
-              className={`absolute top-[55px] right-0 w-12 h-12 rounded-r-[28px] rounded-l-[10px] bg-[#2a2f37] border border-white/5 text-white text-lg flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Right")}`}
+              className={`absolute top-[45px] right-0 w-10 h-10 rounded-r-[22px] rounded-l-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Right")}`}
             >▶</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Down")}
               aria-label="Baixo"
-              className={`absolute bottom-0 left-[55px] w-12 h-12 rounded-b-[28px] rounded-t-[10px] bg-[#2a2f37] border border-white/5 text-white text-lg flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Down")}`}
+              className={`absolute bottom-0 left-[44px] w-10 h-10 rounded-b-[22px] rounded-t-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Down")}`}
             >▼</motion.button>
           </div>
         </div>
 
-        {/* Vol-/vol+/mute/power */}
-        <div className="grid grid-cols-4 gap-1.5 p-2.5 pt-0">
+        {/* Vol-/mute/vol+/power — 28px de altura */}
+        <div className="grid grid-cols-4 gap-1 p-1.5 pt-0">
           <button
             {...volDown}
             title="Volume −"
-            className={`h-10 rounded-lg bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
+            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
           >
-            <Volume1 className="w-4 h-4" />
+            <Volume1 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => dispatch("Mute")}
             title="Mudo"
-            className={`h-10 rounded-lg bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Mute")}`}
+            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Mute")}`}
           >
-            <VolumeX className="w-4 h-4" />
+            <VolumeX className="w-3.5 h-3.5" />
           </button>
           <button
             {...volUp}
             title="Volume +"
-            className={`h-10 rounded-lg bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
+            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
           >
-            <Volume2 className="w-4 h-4" />
+            <Volume2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onPower}
             title={status === "down" && tv?.mac ? "Ligar TV (WoL)" : "Liga/Desliga"}
-            className={`h-10 rounded-lg bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
+            className={`h-7 rounded-md bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
           >
-            <Power className="w-4 h-4" />
+            <Power className="w-3.5 h-3.5" />
           </button>
         </div>
       </main>

@@ -43,7 +43,6 @@ export function AddTVModal() {
 
   const [label, setLabel] = useState("");
   const [host, setHost] = useState("");
-  const [mac, setMac] = useState("");
   const [psk, setPsk] = useState(""); // Sony Bravia: Pre-Shared Key (opcional)
   const [adbPort, setAdbPort] = useState(""); // Android TV: porta da depuração sem fio
   const [brand, setBrand] = useState<TvBrand>("roku");
@@ -54,7 +53,6 @@ export function AddTVModal() {
     if (open) {
       setLabel("");
       setHost("");
-      setMac("");
       setPsk("");
       setAdbPort("");
       setBrand("roku");
@@ -98,15 +96,6 @@ export function AddTVModal() {
       showToast("Digite o IP da TV", "err");
       return;
     }
-    const macClean = mac.trim();
-    if (macClean) {
-      // Aceita AA:BB:CC:DD:EE:FF, AA-BB-..., ou só 12 hex digits
-      const hex = macClean.replace(/[^0-9a-fA-F]/g, "");
-      if (hex.length !== 12) {
-        showToast("MAC inválido — formato esperado: AA:BB:CC:DD:EE:FF", "err");
-        return;
-      }
-    }
     // Android TV usa porta de depuração sem fio (default 5555)
     let port: number | null = null;
     if (brand === "androidtv") {
@@ -118,7 +107,9 @@ export function AddTVModal() {
       label: label.trim() || `${BRAND_LABEL[brand]} (${ip})`,
       brand,
       host: ip,
-      mac: macClean || null,
+      // MAC fica vazio no add; usuário configura depois via Editar (lápis) só
+      // se quiser usar Power-on (Wake-on-LAN). Evita poluir o fluxo inicial.
+      mac: null,
       // Sony usa o auth_token pra PSK (não tem pareamento — chave vem da TV)
       auth_token: brand === "sony" ? psk.trim() || null : null,
       port,
@@ -332,15 +323,6 @@ export function AddTVModal() {
                            bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
                            dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
               />
-              <input
-                type="text"
-                value={mac}
-                onChange={(e) => setMac(e.target.value)}
-                placeholder="MAC opcional pra ligar TV (AA:BB:CC:DD:EE:FF)"
-                className="w-full text-[12px] font-mono rounded-lg border px-3 py-2 outline-none transition-colors
-                           bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
-                           dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
-              />
               {brand === "sony" && (
                 <input
                   type="text"
@@ -366,7 +348,6 @@ export function AddTVModal() {
               )}
               <p className="text-[10px] leading-snug text-gray-500 dark:text-white/40">
                 IP: Na TV em <strong className="text-gray-700 dark:text-white/60">Configurações → Rede → Sobre</strong>.
-                MAC ativa <strong className="text-primary">Wake-on-LAN</strong> (liga a TV mesmo desligada).
                 {brand === "sony" && (
                   <>
                     {" "}PSK ativa o controle IP: <strong className="text-gray-700 dark:text-white/60">Config → Rede → IP Control → Autenticação → "Normal e Chave Pré-Compartilhada"</strong>.
