@@ -123,13 +123,29 @@ export function AppsGrid() {
     } catch (e) {
       // Tauri rejeita comandos com `String` direto (não `Error`).
       // Cobrimos os 2 casos pra mostrar a mensagem real, não "Falhou" genérico.
-      const msg =
+      const rawMsg =
         typeof e === "string"
           ? e
           : e instanceof Error
           ? e.message
-          : `${app.name} não pôde abrir — TV alcançável?`;
-      showToast(msg, "err");
+          : "";
+      const status = rawMsg.match(/respondeu (\d+)/)?.[1];
+      // Mensagens específicas pelos status mais comuns do ECP
+      let friendly: string;
+      if (status === "404") {
+        friendly = `${app.name} não está instalado nesta TV.`;
+      } else if (status === "403") {
+        friendly = `Ative o Modo Permissivo no Roku (Ajustes › Sistema › Avançado).`;
+      } else if (rawMsg.toLowerCase().includes("timeout") || rawMsg.toLowerCase().includes("timed out")) {
+        friendly = `${app.name}: TV demorou demais — tente de novo.`;
+      } else if (rawMsg.toLowerCase().includes("connection refused") || rawMsg.toLowerCase().includes("unreachable")) {
+        friendly = `TV offline ou IP errado.`;
+      } else if (rawMsg) {
+        friendly = `${app.name}: ${rawMsg}`;
+      } else {
+        friendly = `${app.name} não pôde abrir — TV alcançável?`;
+      }
+      showToast(friendly, "err");
     }
   };
 

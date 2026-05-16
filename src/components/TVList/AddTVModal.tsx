@@ -1,13 +1,13 @@
-// Modal "Adicionar TV".
-// 2 caminhos:
-//   1) Auto-discovery via SSDP (botão "Procurar na rede") — sugere TVs achadas
-//   2) Manual — usuário digita label + IP + escolhe a marca
+// Modal "Adicionar TV" — redesenhado pra ser óbvio:
+//   1. Hero: "Buscando suas TVs..." com pulse animation
+//   2. Resultados aparecem prontos pra click
+//   3. "Adicionar manualmente" é um caminho secundário, recolhido por padrão
 //
-// Sprint 2: para TVs Samsung/LG, dispara o pareamento automaticamente após
+// Sprint 2: para Samsung/LG, dispara o pareamento automaticamente após
 // adicionar e salva o token/client-key recebido.
 
 import { useEffect, useState } from "react";
-import { Search, Wifi, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, RefreshCw, Tv2, Wifi, X } from "lucide-react";
 import { useUiStore } from "@/stores/uiStore";
 import { useTvStore } from "@/stores/tvStore";
 import { useDiscovery } from "@/hooks/useDiscovery";
@@ -39,13 +39,15 @@ export function AddTVModal() {
   const [host, setHost] = useState("");
   const [brand, setBrand] = useState<TvBrand>("roku");
   const [pairing, setPairing] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
       setLabel("");
       setHost("");
       setBrand("roku");
-      scan(3000);
+      setManualOpen(false);
+      scan(4000);
     }
   }, [open, scan]);
 
@@ -103,126 +105,181 @@ export function AddTVModal() {
     await maybePair(tv);
   };
 
+  const hasResults = results.length > 0;
+  const showEmpty = !scanning && !hasResults;
+
   return (
     <div
       className="fixed inset-0 z-[200] flex items-start justify-center px-5 py-8 overflow-y-auto bg-black/60 backdrop-blur-sm"
       onClick={close}
     >
       <div
-        className="w-full max-w-[380px] bg-[#15181d] border border-white/[0.06] rounded-2xl p-5 my-auto shadow-2xl"
+        className="w-full max-w-[400px] bg-[#15181d] border border-white/[0.06] rounded-2xl my-auto shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-3">
+        {/* Header simples */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-1">
           <h3 className="text-[15px] font-bold">Adicionar TV</h3>
           <button onClick={close} className="text-white/50 hover:text-white p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Auto-discovery */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold">
-              Encontradas na rede
-            </label>
-            <button
-              onClick={() => scan(3000)}
-              disabled={scanning || pairing}
-              className="text-[11px] font-semibold text-primary hover:text-sky-300 disabled:opacity-50 inline-flex items-center gap-1"
-            >
-              {scanning ? (
-                <>
-                  <Wifi className="w-3 h-3 animate-pulse" /> Procurando…
-                </>
-              ) : (
-                <>
-                  <Search className="w-3 h-3" /> Procurar
-                </>
-              )}
-            </button>
-          </div>
-
-          {results.length === 0 && !scanning && (
-            <div className="text-xs text-white/40 px-2 py-3 text-center">
-              {error ?? "Nenhuma TV detectada. Adicione manualmente abaixo."}
+        {/* HERO — Busca automática */}
+        <div className="px-5 pt-4 pb-5">
+          {scanning && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="relative mb-4">
+                <div className="w-16 h-16 rounded-full bg-primary/10 grid place-items-center">
+                  <Wifi className="w-7 h-7 text-primary animate-pulse" />
+                </div>
+                <span className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" />
+              </div>
+              <div className="text-sm font-bold text-white">Procurando suas TVs</div>
+              <div className="text-[11px] text-white/50 mt-1">
+                Olhando a rede local…
+              </div>
             </div>
           )}
 
-          <div className="space-y-1.5">
-            {results.map((tv) => (
+          {!scanning && hasResults && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-white/50 font-bold">
+                  {results.length === 1
+                    ? "1 TV encontrada"
+                    : `${results.length} TVs encontradas`}
+                </div>
+                <button
+                  onClick={() => scan(4000)}
+                  disabled={pairing}
+                  className="text-[11px] font-semibold text-primary hover:text-sky-300 inline-flex items-center gap-1 disabled:opacity-50"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Procurar de novo
+                </button>
+              </div>
+              {results.map((tv) => (
+                <button
+                  key={tv.id}
+                  onClick={() => onPickFromScan(tv)}
+                  disabled={pairing}
+                  className="w-full flex items-center gap-3 text-left px-3 py-2.5 rounded-xl bg-primary/[0.06] border border-primary/25 hover:border-primary hover:bg-primary/10 transition-all disabled:opacity-50"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 grid place-items-center text-primary shrink-0">
+                    <Tv2 className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">
+                      {tv.label}
+                    </div>
+                    <div className="text-[11px] text-white/50 font-mono truncate">
+                      {tv.host}
+                    </div>
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider text-primary font-bold">
+                    {BRAND_LABEL[tv.brand]}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showEmpty && (
+            <div className="flex flex-col items-center text-center py-6 px-2">
+              <div className="w-12 h-12 rounded-full bg-white/[0.04] grid place-items-center mb-2">
+                <Tv2 className="w-5 h-5 text-white/40" />
+              </div>
+              <div className="text-sm font-semibold text-white">
+                Nenhuma TV detectada
+              </div>
+              <div className="text-[11px] text-white/50 mt-1 leading-snug max-w-[260px]">
+                {error ?? "Verifique se a TV está ligada e na mesma rede Wi-Fi do PC."}
+              </div>
               <button
-                key={tv.id}
-                onClick={() => onPickFromScan(tv)}
-                disabled={pairing}
-                className="w-full flex items-center justify-between text-left px-3 py-2 rounded-lg bg-black/20 border border-transparent hover:border-primary/30 hover:bg-primary/5 transition-colors disabled:opacity-50"
+                onClick={() => scan(4000)}
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-bold"
               >
-                <div>
-                  <div className="text-sm font-semibold text-white">{tv.label}</div>
-                  <div className="text-[11px] text-white/40 font-mono">{tv.host}</div>
-                </div>
-                <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">
-                  {BRAND_LABEL[tv.brand]}
-                </div>
+                <RefreshCw className="w-3 h-3" />
+                Procurar de novo
               </button>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Divisor + entrada manual */}
-        <div className="h-px bg-white/[0.06] my-4" />
-        <label className="block text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-1.5">
-          Adicionar manualmente
-        </label>
-
-        {/* Marca */}
-        <div className="flex gap-1.5 mb-2">
-          {MANUAL_BRANDS.map((b) => (
-            <button
-              key={b.value}
-              onClick={() => setBrand(b.value)}
-              className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-colors
-                ${brand === b.value
-                  ? "bg-primary text-white"
-                  : "bg-black/30 text-white/50 hover:bg-black/40 hover:text-white"}`}
-            >
-              {b.label}
-            </button>
-          ))}
-        </div>
-
-        <input
-          type="text"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Apelido (ex: Sala)"
-          className="w-full bg-black/30 text-white text-sm rounded-lg border border-white/[0.08] px-3 py-2 mb-2 outline-none focus:border-primary"
-        />
-        <input
-          type="text"
-          value={host}
-          onChange={(e) => setHost(e.target.value)}
-          placeholder="IP (ex: 192.168.0.10)"
-          className="w-full bg-black/30 text-white text-sm font-mono rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
-        />
-        <p className="text-[11px] text-white/40 mt-2 leading-snug">
-          Não sabe o IP? Abra na TV: Configurações → Rede → Sobre.
-        </p>
-
-        <div className="flex justify-end gap-2 mt-4">
+        {/* Footer: Manual — escondido por padrão */}
+        <div className="border-t border-white/[0.06] bg-black/20">
           <button
-            onClick={close}
-            disabled={pairing}
-            className="px-4 py-2 rounded-lg bg-[#2a2f37] hover:bg-[#3d4350] text-white text-sm font-semibold disabled:opacity-50"
+            onClick={() => setManualOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-white/[0.02]"
           >
-            Cancelar
+            <div>
+              <div className="text-[12px] font-bold text-white/80">
+                Adicionar manualmente
+              </div>
+              <div className="text-[10px] text-white/40">
+                Se você já sabe o IP da TV
+              </div>
+            </div>
+            {manualOpen ? (
+              <ChevronUp className="w-4 h-4 text-white/40" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-white/40" />
+            )}
           </button>
-          <button
-            onClick={onAddManual}
-            disabled={pairing}
-            className="px-4 py-2 rounded-lg bg-primary hover:bg-sky-400 text-white text-sm font-semibold disabled:opacity-50"
-          >
-            {pairing ? "Pareando…" : "Adicionar"}
-          </button>
+
+          {manualOpen && (
+            <div className="px-5 pb-4 pt-1 space-y-2">
+              {/* Marca */}
+              <div className="flex gap-1.5">
+                {MANUAL_BRANDS.map((b) => (
+                  <button
+                    key={b.value}
+                    onClick={() => setBrand(b.value)}
+                    className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-colors
+                      ${brand === b.value
+                        ? "bg-primary text-white"
+                        : "bg-black/30 text-white/50 hover:bg-black/40 hover:text-white"}`}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="Apelido (ex: Sala)"
+                className="w-full bg-black/30 text-white text-sm rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
+              />
+              <input
+                type="text"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
+                placeholder="IP da TV (ex: 192.168.0.10)"
+                className="w-full bg-black/30 text-white text-sm font-mono rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
+              />
+              <p className="text-[10px] text-white/40 leading-snug">
+                Não sabe o IP? Na TV: <strong className="text-white/60">Configurações → Rede → Sobre</strong>.
+              </p>
+
+              <button
+                onClick={onAddManual}
+                disabled={pairing || !host.trim()}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-sky-400 disabled:opacity-40 text-white text-sm font-semibold"
+              >
+                {pairing ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Pareando…
+                  </>
+                ) : (
+                  "Adicionar TV"
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ import type { RokuKey } from "@/types";
 import { sendCommand, commandFromRokuKey, type Command } from "@/lib/commands";
 import { DPad } from "./DPad";
 import { RemoteButton } from "./RemoteButton";
+import { InlineTypeBar } from "./InlineTypeBar";
 
 export function RemoteShell() {
   const tv = useTvStore((s) => s.selected());
@@ -61,7 +62,8 @@ export function RemoteShell() {
     >
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-white/[0.04] rounded-full" />
 
-      <div className="flex justify-between gap-2.5 mb-2.5">
+      {/* Top row: Power · Inline search (Type-on-TV) · Mute */}
+      <div className="flex items-center gap-2 mb-2.5">
         <RemoteButton
           variant="icon"
           onClick={() => dispatch("PowerOff", "PowerOff")}
@@ -70,6 +72,7 @@ export function RemoteShell() {
         >
           <Power className={`w-5 h-5 ${flash("PowerOff") ? "" : "text-red-400/80"}`} />
         </RemoteButton>
+        <InlineTypeBar />
         <RemoteButton
           variant="icon"
           onClick={() => dispatch("Mute", "VolumeMute")}

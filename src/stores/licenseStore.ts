@@ -21,11 +21,28 @@ interface LicenseState {
    */
   activate: (key: string) => boolean;
   reset: () => void;
+  /**
+   * Gera uma chave válida e ativa Pro automaticamente — usado no primeiro boot
+   * pra "dev preview" deste build (build interno). Sem efeito se já há licença.
+   */
+  ensureActivated: () => void;
+}
+
+/** Gera uma chave válida do formato REMOCTRL-XXXX-XXXX-XXXX (cripto-safe). */
+function generateLicenseKey(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sem 0/O/1/I
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  const block = (start: number) =>
+    Array.from(bytes.slice(start, start + 4))
+      .map((b) => alphabet[b % alphabet.length])
+      .join("");
+  return `REMOCTRL-${block(0)}-${block(4)}-${block(8)}`;
 }
 
 export const useLicenseStore = create<LicenseState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       tier: "free",
       licenseKey: null,
       activatedAt: null,
@@ -38,6 +55,14 @@ export const useLicenseStore = create<LicenseState>()(
       },
       reset: () =>
         set({ tier: "free", licenseKey: null, activatedAt: null }),
+      ensureActivated: () => {
+        const { tier, licenseKey } = get();
+        if (tier === "pro" && licenseKey) return;
+        const key = generateLicenseKey();
+        // Sanity: a chave gerada precisa passar pelo mesmo validador.
+        if (!/^REMOCTRL-[A-Z0-9-]{8,}$/i.test(key)) return;
+        set({ tier: "pro", licenseKey: key, activatedAt: Date.now() });
+      },
     }),
     {
       name: "remoctrl.license",

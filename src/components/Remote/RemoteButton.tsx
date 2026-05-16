@@ -26,13 +26,13 @@ export function RemoteButton({
   flash,
 }: Props) {
   const base =
-    "min-h-[48px] flex items-center justify-center gap-1.5 rounded-2xl border border-white/5 bg-[#2a2f37] text-white text-sm font-semibold transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]";
+    "min-h-[44px] flex items-center justify-center gap-1.5 rounded-2xl border border-white/5 bg-[#2a2f37] text-white text-[13px] font-semibold transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]";
   const variantClass =
     variant === "icon"
-      ? "flex-none w-[60px] p-3"
+      ? "flex-none w-[44px] h-[44px] p-2.5"
       : variant === "danger"
       ? `${base} hover:!text-red-400 hover:!border-red-500/30`
-      : "flex-1 px-4 py-3";
+      : "flex-1 px-3 py-2.5";
   const flashClass = flash ? "!bg-primary !border-primary !text-white" : "";
 
   return (

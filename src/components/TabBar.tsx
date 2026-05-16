@@ -16,7 +16,9 @@ export function TabBar() {
   const setTab = useUiStore((s) => s.setTab);
 
   return (
-    <nav className="flex justify-around items-stretch border-t border-white/[0.06] bg-[#0a0c10]/95 backdrop-blur-md mt-3">
+    <nav className="flex justify-around items-stretch border-t backdrop-blur-md mt-3
+                    border-gray-200 bg-gray-50/95
+                    dark:border-white/[0.06] dark:bg-[#0a0c10]/95">
       {TABS.map(({ id, label, Icon }) => {
         const active = tab === id;
         return (
@@ -24,7 +26,9 @@ export function TabBar() {
             key={id}
             onClick={() => setTab(id)}
             className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
-              active ? "text-primary" : "text-white/40 hover:text-white"
+              active
+                ? "text-primary"
+                : "text-gray-400 hover:text-gray-900 dark:text-white/40 dark:hover:text-white"
             }`}
           >
             <Icon className="w-4 h-4" strokeWidth={active ? 2.4 : 1.8} />

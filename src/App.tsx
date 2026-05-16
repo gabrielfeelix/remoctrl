@@ -5,7 +5,6 @@
 import { useEffect } from "react";
 import { TitleBar } from "@/components/TitleBar";
 import { TvChips } from "@/components/TVList/Chips";
-import { TypeBar } from "@/components/Remote/TypeBar";
 import { RemoteShell } from "@/components/Remote/RemoteShell";
 import { AppsGrid } from "@/components/AppsGrid";
 import { MacroList } from "@/components/Macros/MacroList";
@@ -17,6 +16,7 @@ import { Onboarding } from "@/components/Onboarding/Onboarding";
 import { ToastViewport } from "@/components/Toast";
 import { useUiStore } from "@/stores/uiStore";
 import { useTvStore } from "@/stores/tvStore";
+import { useLicenseStore } from "@/stores/licenseStore";
 import { useTheme } from "@/hooks/useTheme";
 import { useCustomShortcuts } from "@/hooks/useCustomShortcuts";
 import { isTauri, setAlwaysOnTop as setAotBackend } from "@/lib/tauri";
@@ -25,11 +25,15 @@ function App() {
   const { tab, onboardingDone, openTutorial, openAddTv, alwaysOnTop, setAlwaysOnTop } =
     useUiStore();
   const savedCount = useTvStore((s) => s.saved.length);
+  const ensureLicensed = useLicenseStore((s) => s.ensureActivated);
 
   useTheme();
   useCustomShortcuts();
 
   useEffect(() => {
+    // Build interno: garante Pro ativo já no boot.
+    ensureLicensed();
+
     if (!onboardingDone) openTutorial();
     else if (savedCount === 0) openAddTv();
 
@@ -47,41 +51,39 @@ function App() {
     // (a janela Tauri é transparent; só a borda do <main> aparece).
     <div className="h-screen w-screen flex items-stretch justify-stretch p-0 bg-transparent">
       <main
-        className="flex-1 flex flex-col bg-[#0a0c10] text-white select-none overflow-hidden
-                   rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]"
+        className="flex-1 flex flex-col select-none overflow-hidden rounded-2xl
+                   bg-white text-gray-900
+                   dark:bg-[#0a0c10] dark:text-white
+                   shadow-[0_24px_64px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.06)]
+                   dark:shadow-[0_24px_64px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]"
       >
         {/* TitleBar custom — drag + controles */}
         <TitleBar />
 
         {/* Header sticky: chips ficam visíveis mesmo com scroll abaixo */}
-        <div className="sticky top-0 z-10 px-3 pt-2.5 bg-[#0a0c10]">
+        <div className="sticky top-0 z-10 px-3 pt-2.5 bg-white dark:bg-[#0a0c10]">
           <TvChips />
         </div>
 
         {/* Conteúdo principal */}
-        <div className="w-full max-w-[380px] mx-auto flex-1 flex flex-col px-3 overflow-y-auto scrollbar-none">
+        <div className="w-full max-w-[440px] mx-auto flex-1 flex flex-col px-3 overflow-y-auto scrollbar-none">
           <div className="flex-1 flex flex-col">
-            {tab === "remote" && (
-              <>
-                <TypeBar />
-                <RemoteShell />
-              </>
-            )}
+            {tab === "remote" && <RemoteShell />}
             {tab === "apps" && <AppsGrid />}
             {tab === "macros" && <MacroList />}
             {tab === "settings" && <SettingsPanel />}
           </div>
 
           {tab === "remote" && (
-            <div className="mt-3 mb-2 text-[10px] text-white/30 text-center leading-relaxed px-2">
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">↑↓←→</kbd>{" "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">Enter</kbd>{" "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">Esc</kbd>{" "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">Espaço</kbd>
+            <div className="mt-3 mb-2 text-[10px] text-center leading-relaxed px-2 text-gray-400 dark:text-white/30">
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">↑↓←→</kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">Enter</kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">Esc</kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">Espaço</kbd>
               {" • "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">H</kbd>{" "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">M</kbd>{" "}
-              <kbd className="px-1 py-0.5 bg-white/5 rounded border border-white/10 font-mono">P</kbd>
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">H</kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">M</kbd>{" "}
+              <kbd className="px-1 py-0.5 rounded border font-mono bg-gray-100 border-gray-200 text-gray-600 dark:bg-white/5 dark:border-white/10 dark:text-white/60">P</kbd>
             </div>
           )}
         </div>

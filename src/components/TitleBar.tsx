@@ -70,7 +70,9 @@ export function TitleBar() {
     <header
       data-tauri-drag-region
       onMouseDown={onMouseDown}
-      className="flex items-center gap-2 h-9 px-2.5 select-none border-b border-white/[0.06] bg-[#0a0c10]/90 backdrop-blur-md"
+      className="flex items-center gap-2 h-9 px-2.5 select-none border-b backdrop-blur-md
+                 border-gray-200 bg-gray-50/95
+                 dark:border-white/[0.06] dark:bg-[#0a0c10]/90"
       style={{ cursor: "grab" }}
     >
       {/* Brand — área arrastável; cada filho marcado pra o runtime entender */}
@@ -83,13 +85,13 @@ export function TitleBar() {
         </span>
         <span
           data-tauri-drag-region
-          className="text-[12px] font-bold text-white/90 tracking-tight"
+          className="text-[12px] font-bold tracking-tight text-gray-800 dark:text-white/90"
         >
           Remoctrl
         </span>
         <span
           data-tauri-drag-region
-          className="text-[9px] text-white/30 font-mono ml-1"
+          className="text-[9px] font-mono ml-1 text-gray-400 dark:text-white/30"
         >
           v0.0.1
         </span>
@@ -112,7 +114,7 @@ export function TitleBar() {
         type="button"
         onClick={openTutorial}
         title="Ajuda"
-        className="p-1 rounded-md text-white/50 hover:text-white hover:bg-white/5"
+        className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
       >
         <HelpCircle className="w-3.5 h-3.5" />
       </button>
@@ -120,7 +122,7 @@ export function TitleBar() {
         type="button"
         onClick={onMinimize}
         title="Minimizar"
-        className="p-1 rounded-md text-white/50 hover:text-white hover:bg-white/5"
+        className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
