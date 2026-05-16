@@ -70,17 +70,17 @@ function App() {
       setAotBackend(alwaysOnTop).catch(() => {});
       if (!alwaysOnTop) setAlwaysOnTop(true); // default = on
 
-      // Posiciona à ESQUERDA, vertical center. Roda só uma vez no boot —
-      // se o usuário mover, fica onde ele moveu até a próxima abertura.
+      // Posiciona à ESQUERDA, parte SUPERIOR (não vertical-center, não bottom).
+      // LogicalPosition em vez de PhysicalPosition — respeita o DPI scaling do
+      // Windows (com 150% scale, PhysicalPosition(24,24) ficava praticamente
+      // colado no canto; LogicalPosition dá margem visual consistente).
+      // y=60 garante "topo da tela com respiro", não colado no topo.
       (async () => {
         try {
-          const { PhysicalPosition } = await import("@tauri-apps/api/dpi");
+          const { LogicalPosition } = await import("@tauri-apps/api/dpi");
           const { getCurrentWindow } = await import("@tauri-apps/api/window");
           const win = getCurrentWindow();
-          // TOP-LEFT alinhado: x=24, y=24. Era vertical-center, mas o usuário
-          // quer no topo — fica num lugar "do canto" sem competir com o que
-          // estiver no centro da tela.
-          await win.setPosition(new PhysicalPosition(24, 24));
+          await win.setPosition(new LogicalPosition(24, 60));
         } catch {
           /* noop — sem janela pra reposicionar (modo browser ou erro) */
         }
@@ -95,22 +95,22 @@ function App() {
     if (!isTauri()) return;
     (async () => {
       try {
-        const { LogicalSize, PhysicalPosition } = await import("@tauri-apps/api/dpi");
+        const { LogicalSize, LogicalPosition } = await import("@tauri-apps/api/dpi");
         const { getCurrentWindow } = await import("@tauri-apps/api/window");
         const win = getCurrentWindow();
         if (widgetMode) {
-          // Permite encolher abaixo do minSize do modo normal.
-          await win.setMinSize(new LogicalSize(180, 240));
-          await win.setSize(new LogicalSize(190, 260));
+          // BEEEEEEEM pequeno: 160×220 (era 190×260). Cabe no canto.
+          await win.setMinSize(new LogicalSize(150, 200));
+          await win.setSize(new LogicalSize(160, 220));
           await win.setAlwaysOnTop(true);
-          // Mesma posição base do app normal (x=24, y=24) — só o tamanho muda.
-          await win.setPosition(new PhysicalPosition(24, 24));
+          // Top-left com mesma margem que o app normal — só o tamanho muda.
+          await win.setPosition(new LogicalPosition(24, 60));
         } else {
           // Devolve o minSize normal — sem isso o setSize abaixo é clampado.
           await win.setMinSize(new LogicalSize(360, 600));
           await win.setSize(new LogicalSize(480, 760));
-          // Volta pra origem top-left depois do resize (alguns WMs reposicionam).
-          await win.setPosition(new PhysicalPosition(24, 24));
+          // Reforça posição depois do resize (alguns WMs reposicionam).
+          await win.setPosition(new LogicalPosition(24, 60));
         }
       } catch {
         /* noop */

@@ -1,17 +1,20 @@
-// WidgetRemote — modo "pocket" da janela.
-// Janela ~190x260, posicionada no canto superior esquerdo via App.tsx.
-// Layout MÍNIMO — só o essencial:
-//   - top: 22px (brand + sair + fechar)
-//   - D-pad compacto 130×130
-//   - bottom: 28px com Vol−/Mute/Vol+/Power
-// Tudo cabe sem scroll mesmo com chrome do SO.
+// WidgetRemote — modo "pocket" REALMENTE pequeno.
+// Janela 160×220, posicionada top-left via App.tsx.
+// Layout micro:
+//   - header 18px (status + sair-widget Tv2 + fechar)
+//   - top row 22px (Power | Home)
+//   - DPad 100×100
+//   - bottom row 22px (Voltar | Vol− | Vol+ | Play/Pause)
+// Total ≈ 180px + paddings, cabe em 220 com folga.
+// Ícone "sair-widget" usa Tv2 (NÃO Maximize2, que é fullscreen na TitleBar).
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Power, Volume1, Volume2, Maximize2, X, Home, ChevronLeft, Play, Pause,
+  Power, Volume1, Volume2, Tv2, X, Home, ChevronLeft, Play, Pause,
 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
 import { useTvStore } from "@/stores/tvStore";
 import { useToast } from "@/components/Toast";
 import { useReachability } from "@/hooks/useReachability";
@@ -45,22 +48,43 @@ export function WidgetRemote() {
     }
   };
 
+  // Power inteligente — mesma estratégia do remote completo:
+  // Roku ECP PowerOn primeiro, depois WoL, depois PowerOff normal.
   const onPower = async () => {
     setFlash("PowerOff");
     setTimeout(() => setFlash(null), 120);
     if (!tv) return;
-    if (status === "down" && tv.mac && isTauri()) {
-      try {
-        await wakeOnLan(tv.mac);
-        showToast(`Ligando ${tv.label}…`);
-      } catch (e) {
-        showToast(e instanceof Error ? e.message : "WoL falhou", "err");
+    if (status === "down" && isTauri()) {
+      if (tv.brand === "roku") {
+        try {
+          await invoke("roku_send_key", { host: tv.host, key: "PowerOn" });
+          showToast(`Ligando ${tv.label}…`);
+          return;
+        } catch { /* cai pra WoL */ }
       }
+      if (tv.mac) {
+        try {
+          await wakeOnLan(tv.mac);
+          showToast(`Ligando ${tv.label}… (WoL)`);
+          return;
+        } catch (e) {
+          showToast(e instanceof Error ? e.message : "WoL falhou", "err");
+          return;
+        }
+      }
+      showToast("TV offline — adicione o MAC no modo normal");
       return;
     }
     try {
       await sendCommand(tv, "PowerOff");
-    } catch (e) {
+    } catch {
+      if (tv.brand === "roku" && isTauri()) {
+        try {
+          await invoke("roku_send_key", { host: tv.host, key: "PowerOn" });
+          showToast(`Ligando ${tv.label}…`);
+          return;
+        } catch { /* segue */ }
+      }
       if (tv.mac && isTauri()) {
         try {
           await wakeOnLan(tv.mac);
@@ -68,15 +92,13 @@ export function WidgetRemote() {
           return;
         } catch { /* noop */ }
       }
-      showToast(e instanceof Error ? e.message : "Power falhou", "err");
+      showToast("Power falhou", "err");
     }
   };
 
-  // Hold pra Vol +/−
   const volUp = useLongPress({ onAction: () => dispatch("VolumeUp", true) });
   const volDown = useLongPress({ onAction: () => dispatch("VolumeDown", true) });
 
-  // Drag da janela inteira pela área "top bar" do widget
   const onMouseDownDrag = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
@@ -85,10 +107,7 @@ export function WidgetRemote() {
     getCurrentWindow().startDragging().catch(() => {});
   };
 
-  const exitWidget = async () => {
-    setWidgetMode(false);
-    // O App.tsx detecta mudança e restaura tamanho via useEffect.
-  };
+  const exitWidget = () => setWidgetMode(false);
 
   const onClose = async () => {
     if (!isTauri()) return;
@@ -115,28 +134,28 @@ export function WidgetRemote() {
   return (
     <div className="h-screen w-screen flex items-stretch justify-stretch bg-transparent">
       <main
-        className="flex-1 flex flex-col select-none overflow-hidden rounded-2xl
+        className="flex-1 flex flex-col select-none overflow-hidden rounded-xl
                    bg-gradient-to-b from-[#1a1d23] to-[#0f1115]
                    border border-[#2a2f37]
-                   shadow-[0_24px_64px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)]"
+                   shadow-[0_18px_48px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)]"
       >
-        {/* Top: drag + sair widget + fechar — 22px de altura */}
+        {/* Header 18px: status dot + label + Tv2 (sair) + X (fechar) */}
         <header
           data-tauri-drag-region
           onMouseDown={onMouseDownDrag}
-          className="flex items-center gap-1 h-[22px] px-1.5 border-b border-white/[0.04]"
+          className="flex items-center gap-0.5 h-[18px] px-1 border-b border-white/[0.04]"
           style={{ cursor: "grab" }}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
-          <span data-tauri-drag-region className="text-[9px] font-bold text-white/80 truncate flex-1 min-w-0">
+          <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0 ml-0.5`} />
+          <span data-tauri-drag-region className="text-[9px] font-bold text-white/80 truncate flex-1 min-w-0 px-1">
             {tv?.label ?? "Sem TV"}
           </span>
           <button
             onClick={exitWidget}
-            title="Voltar pro modo normal (Esc)"
-            className="p-0.5 rounded text-white/50 hover:text-white hover:bg-white/5"
+            title="Voltar pro Remoctrl normal (Esc)"
+            className="p-0.5 rounded text-white/50 hover:text-primary hover:bg-white/5"
           >
-            <Maximize2 className="w-2.5 h-2.5" />
+            <Tv2 className="w-2.5 h-2.5" />
           </button>
           <button
             onClick={onClose}
@@ -147,90 +166,90 @@ export function WidgetRemote() {
           </button>
         </header>
 
-        {/* Top row: Power | Home — 26px */}
+        {/* Top row 22px: Power | Home */}
         <div className="grid grid-cols-2 gap-1 px-1.5 pt-1.5">
           <button
             onClick={onPower}
             title={status === "down" ? "Ligar TV" : "Liga/Desliga"}
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 grid place-items-center hover:bg-red-500/20 ${armed("PowerOff") ? "!bg-primary text-white" : "text-red-400/80"}`}
           >
-            <Power className="w-3.5 h-3.5" />
+            <Power className="w-3 h-3" />
           </button>
           <button
             onClick={() => dispatch("Home")}
             title="Home"
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Home")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Home")}`}
           >
-            <Home className="w-3.5 h-3.5" />
+            <Home className="w-3 h-3" />
           </button>
         </div>
 
-        {/* DPad compacto 130x130, centralizado */}
+        {/* DPad 100x100 centralizado */}
         <div className="flex-1 flex items-center justify-center px-1.5 py-1">
-          <div className="relative w-[130px] h-[130px]">
+          <div className="relative w-[100px] h-[100px]">
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Up")}
               aria-label="Cima"
-              className={`absolute top-0 left-[44px] w-10 h-10 rounded-t-[22px] rounded-b-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Up")}`}
+              className={`absolute top-0 left-[35px] w-[30px] h-[30px] rounded-t-[18px] rounded-b-[6px] bg-[#2a2f37] border border-white/5 text-white text-xs flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Up")}`}
             >▲</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Left")}
               aria-label="Esquerda"
-              className={`absolute top-[45px] left-0 w-10 h-10 rounded-l-[22px] rounded-r-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Left")}`}
+              className={`absolute top-[35px] left-0 w-[30px] h-[30px] rounded-l-[18px] rounded-r-[6px] bg-[#2a2f37] border border-white/5 text-white text-xs flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Left")}`}
             >◀</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Ok")}
               aria-label="OK"
-              className={`absolute top-[41px] left-[41px] w-[48px] h-[48px] rounded-full text-white font-extrabold text-[12px] bg-gradient-to-br from-sky-400 to-primary shadow-[0_3px_10px_rgba(14,165,233,0.45)] hover:brightness-110 ${armed("Ok")}`}
+              className={`absolute top-[32px] left-[32px] w-[36px] h-[36px] rounded-full text-white font-extrabold text-[10px] bg-gradient-to-br from-sky-400 to-primary shadow-[0_3px_8px_rgba(14,165,233,0.45)] hover:brightness-110 ${armed("Ok")}`}
             >OK</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Right")}
               aria-label="Direita"
-              className={`absolute top-[45px] right-0 w-10 h-10 rounded-r-[22px] rounded-l-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Right")}`}
+              className={`absolute top-[35px] right-0 w-[30px] h-[30px] rounded-r-[18px] rounded-l-[6px] bg-[#2a2f37] border border-white/5 text-white text-xs flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Right")}`}
             >▶</motion.button>
             <motion.button
               whileTap={PRESS}
               onClick={() => dispatch("Down")}
               aria-label="Baixo"
-              className={`absolute bottom-0 left-[44px] w-10 h-10 rounded-b-[22px] rounded-t-[8px] bg-[#2a2f37] border border-white/5 text-white text-sm flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Down")}`}
+              className={`absolute bottom-0 left-[35px] w-[30px] h-[30px] rounded-b-[18px] rounded-t-[6px] bg-[#2a2f37] border border-white/5 text-white text-xs flex items-center justify-center hover:bg-[#3d4350] active:bg-primary ${armed("Down")}`}
             >▼</motion.button>
           </div>
         </div>
 
-        {/* Bottom row: Voltar | Vol− | Vol+ | Play/Pause — 26px */}
+        {/* Bottom row 22px: Voltar | Vol− | Vol+ | Play/Pause */}
         <div className="grid grid-cols-4 gap-1 px-1.5 pb-1.5">
           <button
             onClick={() => dispatch("Back")}
             title="Voltar"
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Back")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("Back")}`}
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-3 h-3" />
           </button>
           <button
             {...volDown}
             title="Volume − (segure)"
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeDown")}`}
           >
-            <Volume1 className="w-3.5 h-3.5" />
+            <Volume1 className="w-3 h-3" />
           </button>
           <button
             {...volUp}
             title="Volume + (segure)"
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("VolumeUp")}`}
           >
-            <Volume2 className="w-3.5 h-3.5" />
+            <Volume2 className="w-3 h-3" />
           </button>
           <button
             onClick={() => dispatch("PlayPause")}
             title="Play / Pause"
-            className={`h-[26px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("PlayPause")}`}
+            className={`h-[22px] rounded-md bg-[#2a2f37] border border-white/5 text-white grid place-items-center hover:bg-[#3d4350] active:bg-primary ${armed("PlayPause")}`}
           >
-            <Play className="w-3 h-3" fill="currentColor" />
-            <Pause className="w-3 h-3 -ml-0.5" fill="currentColor" />
+            <Play className="w-2.5 h-2.5" fill="currentColor" />
+            <Pause className="w-2.5 h-2.5 -ml-0.5" fill="currentColor" />
           </button>
         </div>
       </main>
