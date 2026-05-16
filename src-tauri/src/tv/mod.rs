@@ -15,6 +15,8 @@ pub mod samsung;
 pub mod lg;
 #[allow(dead_code)]
 pub mod sony;
+#[allow(dead_code)]
+pub mod androidtv;
 
 /// Identificação de uma TV — usado tanto pra TVs descobertas via SSDP
 /// quanto pras TVs que o usuário já adicionou.
@@ -37,6 +39,11 @@ pub enum TvBrand {
     Lg,
     /// Sony Bravia — IRCC-IP via HTTP+SOAP. Auth_token = PSK opcional.
     Sony,
+    /// Android TV / Google TV — ADB sobre TCP/IP. Cobre TCL, Hisense, Xiaomi,
+    /// Sharp, AOC, Multilaser, Philips Android, Sony Google TV. Auth_token =
+    /// "porta:porta" da depuração sem fio (porta dinâmica em Android 11+).
+    #[serde(rename = "androidtv")]
+    AndroidTv,
     /// Marca desconhecida (descoberta SSDP que não casou com nenhum padrão).
     Unknown,
 }

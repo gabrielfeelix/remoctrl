@@ -1,7 +1,7 @@
 // Tipos espelhando os structs do Rust em src-tauri/src/tv/.
 // Mantenha em sincronia com mod.rs e roku.rs.
 
-export type TvBrand = "roku" | "samsung" | "lg" | "sony" | "unknown";
+export type TvBrand = "roku" | "samsung" | "lg" | "sony" | "androidtv" | "unknown";
 
 export interface TvDevice {
   id: string;
@@ -11,6 +11,8 @@ export interface TvDevice {
   auth_token?: string | null;
   /** MAC address pra Wake-on-LAN (formato AA:BB:CC:DD:EE:FF). Opcional. */
   mac?: string | null;
+  /** Porta ADB (Android TV / Google TV). Padrão 5555; Android 11+ é dinâmica. */
+  port?: number | null;
 }
 
 export interface RokuApp {

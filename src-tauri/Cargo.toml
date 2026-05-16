@@ -24,6 +24,9 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-store = "2"
 # Notificações nativas do SO — usadas pelo sleep timer e discovery em background.
 tauri-plugin-notification = "2"
+# Android TV / Google TV — ADB over TCP/IP pra mandar keyevents.
+# Cobre TCL, Hisense, Xiaomi, Sharp, AOC, Multilaser, Philips Android, Sony Google TV.
+adb_client = { version = "3", default-features = false }
 # Garante que só uma instância roda — clicar no ícone com app no tray foca a janela
 # em vez de spawnar duplicata travada na porta IPC.
 tauri-plugin-single-instance = "2"

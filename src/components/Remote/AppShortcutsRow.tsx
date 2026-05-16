@@ -43,7 +43,7 @@ export function AppShortcutsRow() {
           appId: r.appId,
         });
       } else {
-        showToast("Atalho de app não disponível pra Samsung", "err");
+        showToast("Atalho de app não disponível pra esta marca", "err");
         return;
       }
       pushRecent({ ...r, lastOpenedAt: Date.now() });

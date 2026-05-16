@@ -29,46 +29,39 @@ export function InlineTypeBar() {
     inputRef.current?.focus();
   };
 
-  const onSearch = async () => {
-    if (!tv || !inputRef.current) return;
-    const q = inputRef.current.value.trim();
-    if (!q) return;
-    try {
-      await openSearch(tv, q);
-      showToast(`Buscando "${q}"`);
-    } catch (e) {
-      showToast(e instanceof Error ? e.message : "Falhou", "err");
-    }
-  };
-
   const onKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!tv || !supportsType) return;
 
-    // Ctrl+Enter → busca (apenas Roku)
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && supportsSearch) {
-      e.preventDefault();
-      onSearch();
-      return;
-    }
     if (e.key === "Escape") {
       e.preventDefault();
       onClear();
       return;
     }
-    // Enter → manda tudo de uma vez e limpa
+    // Enter → COMPORTAMENTO POR MARCA:
+    //   Roku: dispara busca UNIVERSAL (funciona em todo app — Netflix, Crunchyroll,
+    //         Globoplay, etc. Roku procura o conteúdo em todos os apps instalados).
+    //   LG  : insere o texto no campo focado (insertText via SSAP — funciona em
+    //         teclados nativos do webOS).
     if (e.key === "Enter") {
       const text = inputRef.current?.value ?? "";
       if (!text) return;
       e.preventDefault();
       try {
-        await sendText(tv, text);
+        if (supportsSearch) {
+          await openSearch(tv, text);
+          showToast(`Buscando "${text}"`);
+        } else {
+          await sendText(tv, text);
+        }
         onClear();
       } catch (err) {
         showToast(err instanceof Error ? err.message : "Falhou", "err");
       }
       return;
     }
-    // Roku char-by-char: forward letras pra TV em tempo real
+    // Roku char-by-char: forward letras pra TV em tempo real. Funciona em
+    // teclados NATIVOS da Roku (Netflix, Roku Search, formulários). Apps com
+    // teclado próprio (Crunchyroll, alguns games) ignoram — use Enter pra busca.
     if (charByChar && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
       try {
         await sendText(tv, e.key);
@@ -76,12 +69,11 @@ export function InlineTypeBar() {
         /* silencioso */
       }
     }
-    // FIX: Backspace deve deletar caractere na keyboard da TV, NÃO navegar atrás.
-    // Roku ECP tem uma tecla "Backspace" separada de "Back". Bypassa o dispatcher
-    // pra mandar a tecla certa direto.
+    // Backspace deleta caractere na keyboard da TV (Roku key "Backspace",
+    // distinta de "Back" navegação).
     if (charByChar && e.key === "Backspace") {
       const len = inputRef.current?.value.length ?? 0;
-      if (len === 0) return; // input vazio? não envia nada — evita ruído
+      if (len === 0) return;
       try {
         if (isTauri()) {
           await invoke("roku_send_key", { host: tv.host, key: "Backspace" });
@@ -113,7 +105,7 @@ export function InlineTypeBar() {
         disabled={!supportsType}
         onChange={(e) => setHasText(e.target.value.length > 0)}
         onKeyDown={onKeyDown}
-        className="flex-1 min-w-0 bg-transparent text-white text-[13px] font-medium outline-none placeholder:text-white/40 disabled:cursor-not-allowed"
+        className="search-pure flex-1 min-w-0 bg-transparent text-white text-[13px] font-medium placeholder:text-white/40 disabled:cursor-not-allowed border-0 outline-none focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none p-0"
       />
       {hasText && (
         <button

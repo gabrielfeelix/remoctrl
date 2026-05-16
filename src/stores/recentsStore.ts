@@ -8,7 +8,7 @@ export interface RecentApp {
   /** ID nativo da TV (Roku id ou LG launchPoint id). */
   appId: string;
   /** Marca da TV onde foi aberto — recents é por marca. */
-  brand: "roku" | "lg" | "samsung" | "sony";
+  brand: "roku" | "lg" | "samsung" | "sony" | "androidtv";
   name: string;
   iconUrl?: string;
   lastOpenedAt: number;

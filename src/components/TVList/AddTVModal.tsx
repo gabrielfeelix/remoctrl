@@ -20,6 +20,7 @@ const BRAND_LABEL: Record<TvBrand, string> = {
   samsung: "Samsung",
   lg: "LG",
   sony: "Sony",
+  androidtv: "Android TV",
   unknown: "Outra",
 };
 
@@ -28,6 +29,7 @@ const MANUAL_BRANDS: Array<{ value: TvBrand; label: string }> = [
   { value: "samsung", label: "Samsung" },
   { value: "lg", label: "LG" },
   { value: "sony", label: "Sony" },
+  { value: "androidtv", label: "Android TV" },
 ];
 
 export function AddTVModal() {
@@ -41,6 +43,7 @@ export function AddTVModal() {
   const [host, setHost] = useState("");
   const [mac, setMac] = useState("");
   const [psk, setPsk] = useState(""); // Sony Bravia: Pre-Shared Key (opcional)
+  const [adbPort, setAdbPort] = useState(""); // Android TV: porta da depuração sem fio
   const [brand, setBrand] = useState<TvBrand>("roku");
   const [pairing, setPairing] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
@@ -51,6 +54,7 @@ export function AddTVModal() {
       setHost("");
       setMac("");
       setPsk("");
+      setAdbPort("");
       setBrand("roku");
       setManualOpen(false);
       scan(4000);
@@ -101,6 +105,12 @@ export function AddTVModal() {
         return;
       }
     }
+    // Android TV usa porta de depuração sem fio (default 5555)
+    let port: number | null = null;
+    if (brand === "androidtv") {
+      const p = parseInt(adbPort.trim(), 10);
+      port = Number.isFinite(p) && p > 0 && p < 65536 ? p : 5555;
+    }
     const tv: TvDevice = {
       id: `manual-${brand}-${ip}`,
       label: label.trim() || `${BRAND_LABEL[brand]} (${ip})`,
@@ -109,6 +119,7 @@ export function AddTVModal() {
       mac: macClean || null,
       // Sony usa o auth_token pra PSK (não tem pareamento — chave vem da TV)
       auth_token: brand === "sony" ? psk.trim() || null : null,
+      port,
     };
     addTv(tv);
     showToast("TV adicionada");
@@ -339,12 +350,29 @@ export function AddTVModal() {
                              dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
                 />
               )}
+              {brand === "androidtv" && (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={adbPort}
+                  onChange={(e) => setAdbPort(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="Porta ADB (ex: 5555 ou 41xxx pra wireless debug)"
+                  className="w-full text-[12px] font-mono rounded-lg border px-3 py-2 outline-none transition-colors
+                             bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary
+                             dark:bg-black/30 dark:border-white/[0.08] dark:text-white dark:placeholder:text-white/40"
+                />
+              )}
               <p className="text-[10px] leading-snug text-gray-500 dark:text-white/40">
                 IP: Na TV em <strong className="text-gray-700 dark:text-white/60">Configurações → Rede → Sobre</strong>.
                 MAC ativa <strong className="text-primary">Wake-on-LAN</strong> (liga a TV mesmo desligada).
                 {brand === "sony" && (
                   <>
                     {" "}PSK ativa o controle IP: <strong className="text-gray-700 dark:text-white/60">Config → Rede → IP Control → Autenticação → "Normal e Chave Pré-Compartilhada"</strong>.
+                  </>
+                )}
+                {brand === "androidtv" && (
+                  <>
+                    {" "}Android TV: ative <strong className="text-gray-700 dark:text-white/60">Depuração sem fio</strong> em Opções de Desenvolvedor e pegue a <strong className="text-primary">porta</strong> que a TV mostra.
                   </>
                 )}
               </p>

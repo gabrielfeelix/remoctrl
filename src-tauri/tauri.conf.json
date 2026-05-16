@@ -51,8 +51,6 @@
     "category": "Utility",
     "shortDescription": "Universal smart TV remote",
     "longDescription": "Remoctrl is a fast, honest, beautiful universal remote for smart TVs. Compatible with Roku, Samsung, LG, and more.",
-    "windows": {
-      "signCommand": "../codesign/sign.sh %1"
-    }
+    "windows": {}
   }
 }

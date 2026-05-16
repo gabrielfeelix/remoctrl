@@ -26,4 +26,20 @@
   /* Esconde scrollbar mas mantém scroll (UX limpa) */
   ::-webkit-scrollbar { display: none; }
   * { scrollbar-width: none; }
+
+  /* @tailwindcss/forms adiciona ring/shadow em <input> por padrão.
+     A busca inline do remote (.search-pure) precisa ser visualmente "sem chrome":
+     só o underline do container já dá o feedback de focus. */
+  input.search-pure,
+  input.search-pure:focus,
+  input.search-pure:focus-visible,
+  input.search-pure:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
 }

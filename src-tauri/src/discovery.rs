@@ -95,6 +95,7 @@ fn brand_str(b: TvBrand) -> &'static str {
         TvBrand::Samsung => "samsung",
         TvBrand::Lg => "lg",
         TvBrand::Sony => "sony",
+        TvBrand::AndroidTv => "androidtv",
         TvBrand::Unknown => "unknown",
     }
 }
@@ -105,6 +106,7 @@ fn default_label(brand: TvBrand, host: &str) -> String {
         TvBrand::Samsung => format!("Samsung ({host})"),
         TvBrand::Lg => format!("LG ({host})"),
         TvBrand::Sony => format!("Sony ({host})"),
+        TvBrand::AndroidTv => format!("Android TV ({host})"),
         TvBrand::Unknown => format!("TV ({host})"),
     }
 }

@@ -106,6 +106,14 @@ export async function sendCommand(tv: TvDevice, cmd: Command): Promise<void> {
       });
       return;
     }
+    case "androidtv": {
+      await invoke("androidtv_send_key", {
+        host: tv.host,
+        port: tv.port ?? 5555,
+        command: cmd,
+      });
+      return;
+    }
     default:
       throw new Error(`Marca '${tv.brand}' não suportada`);
   }
@@ -126,11 +134,16 @@ export async function sendText(tv: TvDevice, text: string): Promise<void> {
         text,
       });
       return;
+    case "androidtv":
+      await invoke("androidtv_type_text", {
+        host: tv.host,
+        port: tv.port ?? 5555,
+        text,
+      });
+      return;
     case "samsung":
-      // Samsung não tem comando confiável de "insertText" no protocolo
-      // remoto (precisaria do canal SmartView, não compatível em todos modelos).
-      // Por ora ignoramos.
-      throw new Error("Type-on-TV ainda não suportado em Samsung");
+    case "sony":
+      throw new Error(`Type-on-TV não suportado em ${tv.brand}`);
     default:
       throw new Error(`Marca '${tv.brand}' não suportada`);
   }
@@ -139,6 +152,13 @@ export async function sendText(tv: TvDevice, text: string): Promise<void> {
 /** Ping de conectividade — usado pelo dot verde/vermelho. */
 export async function probeReachability(tv: TvDevice): Promise<boolean> {
   if (!isTauri()) return false;
+  if (tv.brand === "androidtv") {
+    // ADB tem porta dinâmica; passamos junto pra TCP probe.
+    return invoke<boolean>("androidtv_is_reachable", {
+      host: tv.host,
+      port: tv.port ?? 5555,
+    });
+  }
   const cmd =
     tv.brand === "roku"
       ? "roku_is_reachable"

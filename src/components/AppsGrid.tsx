@@ -24,6 +24,7 @@ interface UnifiedApp {
 const BRAND_HOME_HINT: Record<string, string> = {
   samsung: "Samsung",
   sony: "Sony",
+  androidtv: "Android TV",
 };
 
 export function AppsGrid() {
@@ -120,7 +121,7 @@ export function AppsGrid() {
       }
       pushRecent({
         appId: app.id,
-        brand: tv.brand as "roku" | "lg" | "samsung" | "sony",
+        brand: tv.brand as "roku" | "lg" | "samsung" | "sony" | "androidtv",
         name: app.name,
         iconUrl: app.iconUrl,
         lastOpenedAt: Date.now(),

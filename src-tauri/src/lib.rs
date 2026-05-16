@@ -210,6 +210,37 @@ async fn sony_is_reachable(host: String) -> bool {
     tv::sony::is_reachable(&host).await
 }
 
+// ───────────────── Android TV / Google TV (ADB) ─────────────────
+
+/// Manda um comando lógico pra TV Android via ADB.
+/// `port` é a porta da depuração sem fio (varia em Android 11+).
+#[tauri::command]
+async fn androidtv_send_key(
+    host: String,
+    port: u16,
+    command: String,
+) -> Result<(), String> {
+    tv::androidtv::send_key(&host, port, &command)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn androidtv_type_text(
+    host: String,
+    port: u16,
+    text: String,
+) -> Result<(), String> {
+    tv::androidtv::send_text(&host, port, &text)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn androidtv_is_reachable(host: String, port: u16) -> bool {
+    tv::androidtv::is_reachable(&host, port).await
+}
+
 // ───────────────── Wake-on-LAN ─────────────────
 
 /// Liga uma TV (LG/Samsung com WoL ativado) via magic packet.
@@ -354,6 +385,10 @@ pub fn run() {
             // Sony Bravia (IRCC-IP)
             sony_send_key,
             sony_is_reachable,
+            // Android TV / Google TV (ADB)
+            androidtv_send_key,
+            androidtv_type_text,
+            androidtv_is_reachable,
             // Wake-on-LAN
             wake_on_lan,
             // Window
