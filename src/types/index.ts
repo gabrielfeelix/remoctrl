@@ -9,6 +9,8 @@ export interface TvDevice {
   brand: TvBrand;
   host: string;
   auth_token?: string | null;
+  /** MAC address pra Wake-on-LAN (formato AA:BB:CC:DD:EE:FF). Opcional. */
+  mac?: string | null;
 }
 
 export interface RokuApp {

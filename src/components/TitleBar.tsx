@@ -8,8 +8,9 @@
 // `pointer-events-none` foi REMOVIDO dos elementos internos — estava bloqueando
 // o handler de mousedown pros eventos não chegarem ao header.
 
-import { Pin, PinOff, HelpCircle, Minus, X } from "lucide-react";
+import { Pin, PinOff, HelpCircle, Minus, X, Maximize2, Minimize2 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useEffect, useState } from "react";
 import { useUiStore } from "@/stores/uiStore";
 import { useToast } from "@/components/Toast";
 import { setAlwaysOnTop, isTauri } from "@/lib/tauri";
@@ -18,6 +19,26 @@ import { Logo } from "./Logo";
 export function TitleBar() {
   const { alwaysOnTop, setAlwaysOnTop: setAotInStore, openTutorial } = useUiStore();
   const showToast = useToast((s) => s.show);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Sincroniza o estado local com a janela na primeira render
+  useEffect(() => {
+    if (!isTauri()) return;
+    getCurrentWindow().isFullscreen().then(setFullscreen).catch(() => {});
+  }, []);
+
+  // Atalho F11 — toggle fullscreen (mesma tecla que o navegador)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "F11") {
+        e.preventDefault();
+        onToggleFullscreen();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullscreen, alwaysOnTop]);
 
   /** Fallback JS pro drag — fire-and-forget no mesmo tick do mousedown.
    * NÃO usamos await aqui: o IPC precisa ser disparado sincronamente
@@ -54,6 +75,27 @@ export function TitleBar() {
       await getCurrentWindow().minimize();
     } catch {
       /* noop */
+    }
+  };
+
+  const onToggleFullscreen = async () => {
+    if (!isTauri()) {
+      showToast("Disponível só no app desktop", "err");
+      return;
+    }
+    try {
+      const win = getCurrentWindow();
+      const next = !fullscreen;
+      await win.setFullscreen(next);
+      setFullscreen(next);
+      // Fullscreen + always-on-top brigam em alguns compositors; desliga AOT
+      // automaticamente enquanto fullscreen.
+      if (next && alwaysOnTop) {
+        await setAlwaysOnTop(false);
+        setAotInStore(false);
+      }
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Falha ao alternar fullscreen", "err");
     }
   };
 
@@ -117,6 +159,14 @@ export function TitleBar() {
         className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
       >
         <HelpCircle className="w-3.5 h-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={onToggleFullscreen}
+        title={fullscreen ? "Sair do modo TV (F11)" : "Modo TV / fullscreen (F11)"}
+        className="p-1 rounded-md text-gray-500 hover:text-gray-900 hover:bg-black/[0.04] dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5"
+      >
+        {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
       </button>
       <button
         type="button"

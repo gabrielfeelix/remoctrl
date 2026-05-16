@@ -6,15 +6,22 @@
   html, body, #root {
     height: 100%;
   }
-  /* Janela Tauri inicia com `transparent: true` — o body precisa ser
-     transparente pra os cantos arredondados do <main> aparecerem.
-     Cor de fundo real fica no <main> em App.tsx. */
-  html, body {
-    background: transparent !important;
-  }
+  /* Default (browser / janela opaca): body mimica a cor do <main> pra
+     evitar "vazamento" branco em volta dos cantos arredondados.
+     Quando estiver dentro do Tauri (`html.tauri` setado em main.tsx),
+     a janela é `transparent: true` e o body precisa ser transparente
+     pros cantos arredondados realmente aparecerem. */
   body {
     @apply antialiased text-gray-900 dark:text-white;
+    background: #f3f4f6; /* gray-100, base do tema light */
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  html.dark body {
+    background: #05070a; /* um tom abaixo do #0a0c10 do main pra dar profundidade */
+  }
+  html.tauri body,
+  html.tauri.dark body {
+    background: transparent !important;
   }
   /* Esconde scrollbar mas mantém scroll (UX limpa) */
   ::-webkit-scrollbar { display: none; }

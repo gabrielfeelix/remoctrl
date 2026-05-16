@@ -57,6 +57,11 @@ export async function setAlwaysOnTop(value: boolean) {
   return invoke<void>("set_always_on_top", { value });
 }
 
+/** Manda magic packet pra ligar a TV (Wake-on-LAN). Requer MAC salvo. */
+export async function wakeOnLan(mac: string) {
+  return invoke<void>("wake_on_lan", { mac });
+}
+
 /** Detecta se estamos dentro do shell Tauri (vs. browser puro do `npm run dev`). */
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;

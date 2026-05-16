@@ -14,6 +14,8 @@ import { AddTVModal } from "@/components/TVList/AddTVModal";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { Onboarding } from "@/components/Onboarding/Onboarding";
 import { ToastViewport } from "@/components/Toast";
+import { SleepTimerRunner } from "@/components/SleepTimerRunner";
+import { BackgroundDiscovery } from "@/components/BackgroundDiscovery";
 import { useUiStore } from "@/stores/uiStore";
 import { useTvStore } from "@/stores/tvStore";
 import { useLicenseStore } from "@/stores/licenseStore";
@@ -94,6 +96,10 @@ function App() {
         <Onboarding />
         <UpgradeModal />
         <ToastViewport />
+
+        {/* Background runners — não renderizam UI */}
+        <SleepTimerRunner />
+        <BackgroundDiscovery />
       </main>
     </div>
   );

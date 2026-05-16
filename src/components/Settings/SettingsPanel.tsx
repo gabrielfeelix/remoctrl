@@ -4,6 +4,7 @@ import { Sun, Moon, Sparkles, ExternalLink, RotateCcw } from "lucide-react";
 import { useUiStore } from "@/stores/uiStore";
 import { useLicenseStore, useIsPro } from "@/stores/licenseStore";
 import { CustomShortcuts } from "./CustomShortcuts";
+import { SleepTimerCard } from "./SleepTimerCard";
 
 export function SettingsPanel() {
   const { theme, toggleTheme, openUpgrade, openTutorial } = useUiStore();
@@ -32,6 +33,14 @@ export function SettingsPanel() {
             {theme === "dark" ? "Claro" : "Escuro"}
           </button>
         </div>
+      </section>
+
+      {/* Sleep timer — controle de mídia, fica perto de Aparência */}
+      <section>
+        <h3 className="text-[10px] uppercase tracking-[0.08em] text-white/50 font-bold mb-2">
+          Mídia
+        </h3>
+        <SleepTimerCard />
       </section>
 
       {/* Pro */}

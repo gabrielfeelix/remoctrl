@@ -37,6 +37,7 @@ export function AddTVModal() {
 
   const [label, setLabel] = useState("");
   const [host, setHost] = useState("");
+  const [mac, setMac] = useState("");
   const [brand, setBrand] = useState<TvBrand>("roku");
   const [pairing, setPairing] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
@@ -45,6 +46,7 @@ export function AddTVModal() {
     if (open) {
       setLabel("");
       setHost("");
+      setMac("");
       setBrand("roku");
       setManualOpen(false);
       scan(4000);
@@ -86,11 +88,21 @@ export function AddTVModal() {
       showToast("Digite o IP da TV", "err");
       return;
     }
+    const macClean = mac.trim();
+    if (macClean) {
+      // Aceita AA:BB:CC:DD:EE:FF, AA-BB-..., ou só 12 hex digits
+      const hex = macClean.replace(/[^0-9a-fA-F]/g, "");
+      if (hex.length !== 12) {
+        showToast("MAC inválido — formato esperado: AA:BB:CC:DD:EE:FF", "err");
+        return;
+      }
+    }
     const tv: TvDevice = {
       id: `manual-${brand}-${ip}`,
       label: label.trim() || `${BRAND_LABEL[brand]} (${ip})`,
       brand,
       host: ip,
+      mac: macClean || null,
     };
     addTv(tv);
     showToast("TV adicionada");
@@ -260,8 +272,16 @@ export function AddTVModal() {
                 placeholder="IP da TV (ex: 192.168.0.10)"
                 className="w-full bg-black/30 text-white text-sm font-mono rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
               />
+              <input
+                type="text"
+                value={mac}
+                onChange={(e) => setMac(e.target.value)}
+                placeholder="MAC opcional pra ligar TV (AA:BB:CC:DD:EE:FF)"
+                className="w-full bg-black/30 text-white text-[12px] font-mono rounded-lg border border-white/[0.08] px-3 py-2 outline-none focus:border-primary"
+              />
               <p className="text-[10px] text-white/40 leading-snug">
-                Não sabe o IP? Na TV: <strong className="text-white/60">Configurações → Rede → Sobre</strong>.
+                IP: Na TV em <strong className="text-white/60">Configurações → Rede → Sobre</strong>.
+                MAC ativa <strong className="text-primary">Wake-on-LAN</strong> (liga a TV mesmo desligada).
               </p>
 
               <button
