@@ -121,16 +121,36 @@ pub async fn launch_app(
         url = format!("{}?{}", url, qs.join("&"));
     }
     tracing::info!("Roku launch POST → {}", url);
-    let res = http().post(&url).send().await?;
-    if !res.status().is_success() {
-        return Err(anyhow!(
-            "launch respondeu {} (URL: {} · app_id={:?})",
-            res.status(),
-            url,
-            id
-        ));
+    let client = http();
+
+    // Retry-on-5xx: Roku ECP retorna 503 com frequência quando o app tá em
+    // "cold start" (Crunchyroll, Globoplay e outros pesados). O app abre na
+    // TV mesmo assim, mas o response é 503 e a gente mostraria erro à toa.
+    // 200ms entre tentativas é o suficiente pro Roku terminar a transição.
+    // Mantemos 4xx como erro real (404 = app não instalado, 403 = permissive
+    // off) — só 5xx é tratado como transient.
+    let mut last_status: Option<reqwest::StatusCode> = None;
+    for attempt in 0..3 {
+        let res = client.post(&url).send().await?;
+        let status = res.status();
+        if status.is_success() {
+            return Ok(());
+        }
+        last_status = Some(status);
+        if !status.is_server_error() {
+            // 4xx — erro real, não adianta retry
+            break;
+        }
+        if attempt < 2 {
+            tokio::time::sleep(Duration::from_millis(200 * (attempt + 1))).await;
+        }
     }
-    Ok(())
+    Err(anyhow!(
+        "launch respondeu {} (URL: {} · app_id={:?})",
+        last_status.map(|s| s.as_u16()).unwrap_or(0),
+        url,
+        id
+    ))
 }
 
 /// Abre a tela de busca universal da Roku com `query` preenchida.

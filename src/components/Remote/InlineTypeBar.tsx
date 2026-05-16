@@ -96,10 +96,10 @@ export function InlineTypeBar() {
       className={`flex-1 min-w-0 flex items-center gap-2 h-11
                   border-b transition-colors
                   ${supportsType
-                    ? "border-white/15 focus-within:border-primary"
-                    : "border-white/[0.06] opacity-50"}`}
+                    ? "border-gray-300 focus-within:border-primary dark:border-white/15"
+                    : "border-gray-200 dark:border-white/[0.06] opacity-50"}`}
     >
-      <Search className="w-4 h-4 text-white/40 shrink-0" />
+      <Search className="w-4 h-4 shrink-0 text-gray-400 dark:text-white/40" />
       <input
         ref={inputRef}
         type="text"
@@ -109,14 +109,16 @@ export function InlineTypeBar() {
         disabled={!supportsType}
         onChange={(e) => setHasText(e.target.value.length > 0)}
         onKeyDown={onKeyDown}
-        className="search-pure flex-1 min-w-0 bg-transparent text-white text-[13px] font-medium placeholder:text-white/40 disabled:cursor-not-allowed border-0 outline-none focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none p-0"
+        className="search-pure flex-1 min-w-0 bg-transparent text-[13px] font-medium disabled:cursor-not-allowed border-0 outline-none focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none p-0
+                   text-gray-900 placeholder:text-gray-400
+                   dark:text-white dark:placeholder:text-white/40"
       />
       {hasText && (
         <button
           type="button"
           onClick={onClear}
           title="Limpar (Esc)"
-          className="p-0.5 rounded text-white/40 hover:text-white shrink-0"
+          className="p-0.5 rounded shrink-0 text-gray-400 hover:text-primary dark:text-white/40 dark:hover:text-white"
         >
           <X className="w-3.5 h-3.5" />
         </button>

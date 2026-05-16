@@ -60,7 +60,9 @@ export function AppShortcutsRow() {
           key={r.appId}
           onClick={() => launch(r)}
           title={r.name}
-          className="group flex items-center gap-1.5 h-7 px-2 rounded-full bg-white/[0.04] border border-white/[0.05] hover:border-primary/40 hover:bg-primary/10 transition-colors"
+          className="group flex items-center gap-1.5 h-7 px-2 rounded-full border transition-colors
+                     bg-gray-100 border-gray-200 hover:border-primary/40 hover:bg-primary/10
+                     dark:bg-white/[0.04] dark:border-white/[0.05] dark:hover:border-primary/40 dark:hover:bg-primary/10"
         >
           {r.iconUrl ? (
             <img
@@ -72,11 +74,11 @@ export function AppShortcutsRow() {
               }}
             />
           ) : (
-            <span className="w-4 h-4 rounded-sm bg-white/10 grid place-items-center text-[8px] font-bold text-white/60">
+            <span className="w-4 h-4 rounded-sm grid place-items-center text-[8px] font-bold bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white/60">
               {r.name.slice(0, 1)}
             </span>
           )}
-          <span className="text-[10px] font-semibold text-white/70 group-hover:text-white truncate max-w-[60px]">
+          <span className="text-[10px] font-semibold truncate max-w-[60px] text-gray-700 group-hover:text-primary dark:text-white/70 dark:group-hover:text-white">
             {r.name}
           </span>
         </button>

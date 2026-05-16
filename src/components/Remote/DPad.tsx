@@ -13,6 +13,13 @@ interface Props {
 
 const PRESS = { scale: 0.94 };
 
+// Classes compartilhadas pelas 4 setas — dark mode mantém o look original,
+// light mode usa cinza-claro + accent azul (sky) no hover pra ficar elegante.
+const ARROW_BASE =
+  "bg-gray-100 border-gray-200 text-gray-700 hover:bg-sky-50 hover:border-sky-200 hover:text-primary active:bg-primary active:border-primary active:text-white " +
+  "dark:bg-[#2a2f37] dark:border-white/5 dark:text-white dark:hover:bg-[#3d4350] dark:hover:text-white dark:hover:border-white/5 " +
+  "shadow-[0_1px_0_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]";
+
 export function DPad({ onPress, flashKey }: Props) {
   const flash = (key: RokuKey, base: string) =>
     flashKey === key ? `${base} bg-primary !text-white !border-primary` : base;
@@ -29,7 +36,7 @@ export function DPad({ onPress, flashKey }: Props) {
           aria-label="Cima"
           className={flash(
             "Up",
-            "absolute top-0 left-[68px] w-16 h-[60px] rounded-t-[36px] rounded-b-[12px] bg-[#2a2f37] border border-white/5 text-white text-xl flex items-center justify-center transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]",
+            `absolute top-0 left-[68px] w-16 h-[60px] rounded-t-[36px] rounded-b-[12px] border text-xl flex items-center justify-center transition-colors ${ARROW_BASE}`,
           )}
         >
           ▲
@@ -41,12 +48,12 @@ export function DPad({ onPress, flashKey }: Props) {
           aria-label="Esquerda"
           className={flash(
             "Left",
-            "absolute top-[68px] left-0 w-[60px] h-16 rounded-l-[36px] rounded-r-[12px] bg-[#2a2f37] border border-white/5 text-white text-xl flex items-center justify-center transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]",
+            `absolute top-[68px] left-0 w-[60px] h-16 rounded-l-[36px] rounded-r-[12px] border text-xl flex items-center justify-center transition-colors ${ARROW_BASE}`,
           )}
         >
           ◀
         </motion.button>
-        {/* OK */}
+        {/* OK — gradient azul fica lindo nos dois modos, sem mudança */}
         <motion.button
           whileTap={PRESS}
           onClick={() => onPress("Select")}
@@ -65,7 +72,7 @@ export function DPad({ onPress, flashKey }: Props) {
           aria-label="Direita"
           className={flash(
             "Right",
-            "absolute top-[68px] right-0 w-[60px] h-16 rounded-r-[36px] rounded-l-[12px] bg-[#2a2f37] border border-white/5 text-white text-xl flex items-center justify-center transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]",
+            `absolute top-[68px] right-0 w-[60px] h-16 rounded-r-[36px] rounded-l-[12px] border text-xl flex items-center justify-center transition-colors ${ARROW_BASE}`,
           )}
         >
           ▶
@@ -77,7 +84,7 @@ export function DPad({ onPress, flashKey }: Props) {
           aria-label="Baixo"
           className={flash(
             "Down",
-            "absolute bottom-0 left-[68px] w-16 h-[60px] rounded-b-[36px] rounded-t-[12px] bg-[#2a2f37] border border-white/5 text-white text-xl flex items-center justify-center transition-colors hover:bg-[#3d4350] active:bg-primary active:border-primary shadow-[0_2px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]",
+            `absolute bottom-0 left-[68px] w-16 h-[60px] rounded-b-[36px] rounded-t-[12px] border text-xl flex items-center justify-center transition-colors ${ARROW_BASE}`,
           )}
         >
           ▼

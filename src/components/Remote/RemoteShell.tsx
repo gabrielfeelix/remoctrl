@@ -180,11 +180,13 @@ export function RemoteShell() {
   return (
     <div
       className="relative rounded-[36px] p-5 pt-6 pb-7
-                 bg-gradient-to-b from-[#1a1d23] to-[#0f1115]
-                 border border-[#2a2f37]
-                 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.04)]"
+                 bg-gradient-to-b from-gray-50 to-gray-100 border-gray-200
+                 dark:bg-gradient-to-b dark:from-[#1a1d23] dark:to-[#0f1115] dark:border-[#2a2f37]
+                 border
+                 shadow-[0_18px_40px_-12px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.9)]
+                 dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.04)]"
     >
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-white/[0.04] rounded-full" />
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-300/60 dark:bg-white/[0.04]" />
 
       {/* Top row: Power · Inline search · Mute */}
       <div className="flex items-center gap-2 mb-2.5">
@@ -231,7 +233,7 @@ export function RemoteShell() {
           onClick={() => setTrackpad(false)}
           title="D-pad clássico"
           className={`p-1 rounded-md transition-colors ${
-            !trackpad ? "text-primary bg-primary/10" : "text-white/30 hover:text-white/60"
+            !trackpad ? "text-primary bg-primary/10" : "text-gray-400 hover:text-gray-700 dark:text-white/30 dark:hover:text-white/60"
           }`}
         >
           <Gamepad2 className="w-3.5 h-3.5" />
@@ -240,7 +242,7 @@ export function RemoteShell() {
           onClick={() => setTrackpad(true)}
           title="Trackpad (preview)"
           className={`p-1 rounded-md transition-colors ${
-            trackpad ? "text-primary bg-primary/10" : "text-white/30 hover:text-white/60"
+            trackpad ? "text-primary bg-primary/10" : "text-gray-400 hover:text-gray-700 dark:text-white/30 dark:hover:text-white/60"
           }`}
         >
           <Hand className="w-3.5 h-3.5" />
@@ -301,7 +303,7 @@ export function RemoteShell() {
         </RemoteButton>
       </div>
 
-      <div className="h-px bg-white/5 mx-1 my-3" />
+      <div className="h-px bg-gray-200 dark:bg-white/5 mx-1 my-3" />
 
       {/* Inputs (TV/HDMI). Disponível só em Roku no Sprint 2 — Samsung tem KEY_HDMI mas não distingue 1/2/3. */}
       <div className="grid grid-cols-4 gap-1.5">
@@ -314,7 +316,9 @@ export function RemoteShell() {
           <button
             key={b.cmd}
             onClick={() => dispatch(b.cmd as Command, b.flashAs)}
-            className={`min-h-[38px] rounded-lg border border-white/5 bg-[#2a2f37] text-white/60 text-[11px] font-semibold py-2.5 transition-colors hover:bg-[#3d4350] hover:text-white active:scale-95 active:bg-primary active:text-white
+            className={`min-h-[38px] rounded-lg border text-[11px] font-semibold py-2.5 transition-colors active:scale-95 active:bg-primary active:text-white
+              bg-gray-100 border-gray-200 text-gray-600 hover:bg-sky-50 hover:border-sky-200 hover:text-primary
+              dark:bg-[#2a2f37] dark:border-white/5 dark:text-white/60 dark:hover:bg-[#3d4350] dark:hover:text-white dark:hover:border-white/5
               ${flashKey === b.flashAs ? "!bg-primary !text-white" : ""}`}
           >
             {b.label}
