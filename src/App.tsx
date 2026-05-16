@@ -67,25 +67,11 @@ function App() {
 
     // Janela vem `alwaysOnTop: true` da config — sincroniza com o store.
     // Também aplica se o store já tinha valor diferente (persistido).
+    // Posicionamento/tamanho iniciais são feitos no setup() do Rust pra evitar
+    // flash (janela aparecia no canto errado e só dps subia pro lugar certo).
     if (isTauri()) {
       setAotBackend(alwaysOnTop).catch(() => {});
       if (!alwaysOnTop) setAlwaysOnTop(true); // default = on
-
-      // Posiciona à ESQUERDA, parte SUPERIOR (não vertical-center, não bottom).
-      // LogicalPosition em vez de PhysicalPosition — respeita o DPI scaling do
-      // Windows (com 150% scale, PhysicalPosition(24,24) ficava praticamente
-      // colado no canto; LogicalPosition dá margem visual consistente).
-      // y=60 garante "topo da tela com respiro", não colado no topo.
-      (async () => {
-        try {
-          const { LogicalPosition } = await import("@tauri-apps/api/dpi");
-          const { getCurrentWindow } = await import("@tauri-apps/api/window");
-          const win = getCurrentWindow();
-          await win.setPosition(new LogicalPosition(24, 60));
-        } catch {
-          /* noop — sem janela pra reposicionar (modo browser ou erro) */
-        }
-      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -101,8 +87,8 @@ function App() {
           // 160×250 — alvo do print manual do usuário, cabe todos os botões
           await setWindowBounds(160, 250, 24, 60);
         } else {
-          // 420×760 — mais estreito (era 480) + y=20 (era 60, ficava muito baixo)
-          await setWindowBounds(420, 760, 24, 20);
+          // 380×760 — mais estreito ainda (era 420) + y=20 (era 60, ficava muito baixo)
+          await setWindowBounds(380, 760, 24, 20);
         }
         // setAlwaysOnTop é independente do Rust command
         const { getCurrentWindow } = await import("@tauri-apps/api/window");

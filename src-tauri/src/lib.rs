@@ -468,6 +468,18 @@ pub fn run() {
 
                 // Registro de Ctrl+Shift+N DESABILITADO (ver bloco acima).
             }
+
+            // Anti-FLASH: a janela nasce `visible: false` no config. Aqui
+            // confirmamos pos+size ANTES de mostrar — usuário só vê a janela
+            // já no lugar certo, sem o "pulo" do default OS pra (24,20).
+            if let Some(w) = app.get_webview_window("main") {
+                use tauri::{LogicalPosition, LogicalSize};
+                let _ = w.set_size(LogicalSize::new(380.0_f64, 760.0_f64));
+                let _ = w.set_position(LogicalPosition::new(24.0_f64, 20.0_f64));
+                let _ = w.show();
+                let _ = w.set_focus();
+            }
+
             Ok(())
         })
         .on_window_event(|window, event| {
